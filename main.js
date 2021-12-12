@@ -1,3 +1,6 @@
+import * as THREE from "./three.js-master/three.js-master/build/three.module.js"
+import {GLTFLoader} from "./three.js-master/three.js-master/examples/jsm/loaders/GLTFLoader.js"
+
 var camera, scene, renderer, stars = [];
 
 function init() {
@@ -6,11 +9,22 @@ function init() {
 
   scene = new THREE.Scene();
 
+  const loader = new GLTFLoader()
+loader.load('models/rocket.gltf', function(gltf){
+    console.log(gltf)
+    const root = gltf.scene
+    root.scale.set(0.1, 0.1, 0.1)
+    root.position.set(-0.7, 0.4, 0.5)
+    scene.add(root)
+})
+
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   document.body.appendChild(renderer.domElement);
 }
+
+
 
 
 function addSphere() {
