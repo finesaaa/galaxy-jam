@@ -5,33 +5,53 @@ import {
 import {
   GLTFLoader
 } from 'https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js';
+import { Flow } from 'https://cdn.skypack.dev/three@0.129.0/examples/jsm/modifiers/CurveModifier.js';
 
 var camera, scene, renderer, stars = [];
 
-function init() {
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.z = 5;
+camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+camera.position.z = 5;
 
-  scene = new THREE.Scene();
+scene = new THREE.Scene();
 
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-  document.body.appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 
-  const loader = new GLTFLoader()
-  loader.load('models/rocket/scene.gltf', function (gltf) {
-    const root = gltf.scene
-    root.scale.set(0.002, 0.002, 0.002)
-    root.position.set(0, 0, 0)
-    scene.add(root)
-  });
+const gltfLoader = new GLTFLoader()
+gltfLoader.load('models/rocket/scene.gltf', function (gltf) {
+  const root = gltf.scene
+  root.scale.set(0.002, 0.002, 0.002)
+  root.position.set(0, 0, 0)
+  scene.add(root)
+});
 
-  const light = new THREE.PointLight(0xffffff , 1)
-  light.position.set(2,2,5)
-  scene.add(light)
-}
+const light = new THREE.PointLight(0xffffff , 2.0)
+light.position.set(2,2,5)
+scene.add(light)
 
+const somePoints = [
+  new THREE.Vector3(  1,   0, -1 ),
+  new THREE.Vector3(  1, 0.6,  1 ),
+  new THREE.Vector3( -1,   0,  1 ),
+  new THREE.Vector3( -1, 0.2, -1 ),
+];
+
+const curve = new THREE.CatmullRomCurve3( somePoints );	
+curve.closed = true;
+
+const points = curve.getPoints( 60 );
+const line = new THREE.LineLoop( new THREE.BufferGeometry( ).setFromPoints( points ), new THREE.LineBasicMaterial( { color: 0xffffaa } ) );
+scene.add( line );
+
+const geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
+const material = new THREE.MeshPhongMaterial( { color: 0xffff00, wireframe: false } );
+const objectToCurve = new THREE.Mesh( geometry, material );
+
+const flow = new Flow( objectToCurve ); 
+flow.updateCurve( 0, curve );
+scene.add( flow.object3D );
 
 function addSphere() {
   for (var z = -1000; z < 1000; z += 20) {
@@ -47,7 +67,7 @@ function addSphere() {
 
     sphere.position.z = z;
 
-    sphere.scale.x = sphere.scale.y = 2;
+    sphere.scale.x = sphere.scale.y = 0.5;
 
     scene.add(sphere);
 
@@ -88,11 +108,12 @@ fontLoader.load('/fonts/poppins-semibold.json', function(font) {
 
 function render() {
   requestAnimationFrame(render);
+  
+  flow.moveAlongCurve( 0.006 );
 
   renderer.render(scene, camera);
   animateStars();
 }
 
-init();
 addSphere();
 render();
