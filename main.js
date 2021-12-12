@@ -1,5 +1,10 @@
-import * as THREE from "./three.js-master/three.js-master/build/three.module.js"
-import {GLTFLoader} from "./three.js-master/three.js-master/examples/jsm/loaders/GLTFLoader.js"
+import * as THREE from 'https://cdn.skypack.dev/three@0.129.0/build/three.module.js';
+import {
+  OrbitControls
+} from 'https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js';
+import {
+  GLTFLoader
+} from 'https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js';
 
 var camera, scene, renderer, stars = [];
 
@@ -9,22 +14,23 @@ function init() {
 
   scene = new THREE.Scene();
 
-  const loader = new GLTFLoader()
-loader.load('models/rocket.gltf', function(gltf){
-    console.log(gltf)
-    const root = gltf.scene
-    root.scale.set(0.1, 0.1, 0.1)
-    root.position.set(-0.7, 0.4, 0.5)
-    scene.add(root)
-})
-
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   document.body.appendChild(renderer.domElement);
+
+  const loader = new GLTFLoader()
+  loader.load('models/rocket/scene.gltf', function (gltf) {
+    const root = gltf.scene
+    root.scale.set(0.002, 0.002, 0.002)
+    root.position.set(0, 1, 0)
+    scene.add(root)
+  });
+
+  const light = new THREE.PointLight(0xffffff , 1)
+  light.position.set(2,2,5)
+  scene.add(light)
 }
-
-
 
 
 function addSphere() {
@@ -52,11 +58,13 @@ function addSphere() {
 function animateStars() {
   for (var i = 0; i < stars.length; i++) {
 
-    star = stars[i];
+    var star = stars[i];
 
     star.position.z += i / 100;
 
-    if (star.position.z > 1000) star.position.z -= 2000;
+    if (star.position.z > 1000) {
+      star.position.z -= 2000;
+    }
   }
 }
 
@@ -65,7 +73,6 @@ function render() {
 
   renderer.render(scene, camera);
   animateStars();
-
 }
 
 init();

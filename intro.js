@@ -6,7 +6,7 @@ const canvas = document.querySelector('.webgl')
 const scene = new THREE.Scene()
 
 const loader = new GLTFLoader()
-loader.load('models/rocket.gltf', function(gltf){
+loader.load('models/rocket/scene.gltf', function(gltf){
     console.log(gltf)
     const root = gltf.scene
     root.scale.set(0.001, 0.001, 0.001)
