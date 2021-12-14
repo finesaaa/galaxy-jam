@@ -32,30 +32,64 @@ function inializeArrow() {
   arrow = new THREE.Mesh(cylinder, material);
 
   pointsPath = new THREE.CurvePath();
-  const firstLine = new THREE.LineCurve3(
-    new THREE.Vector3(-1, 0, 0),
-    new THREE.Vector3(10, 0, 0)
-  );
-  const secondLine = new THREE.LineCurve3(
-    new THREE.Vector3(-1, 0, 0),
-    new THREE.Vector3(-1, 1, 0)
+
+  const bezier1 = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(-1, 0, -5),
+    new THREE.Vector3(-2, 0, -8),
+    new THREE.Vector3(-10, 0, -14),
   );
 
-  const thirdLine = new THREE.LineCurve3(
-    new THREE.Vector3(-1, 1, 0),
-    new THREE.Vector3(-1, 1, 1)
+  const bezier2 = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(-10, 0, -14),
+    new THREE.Vector3(-11.5, 0, -15),
+    new THREE.Vector3(-16, 0, -20),
+    new THREE.Vector3(-13, 0, -25),
   );
 
-  const bezierLine = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(0, 0, 2),
-    new THREE.Vector3(0, 1.5, 0),
-    new THREE.Vector3(2, 1.5, -2),
-    new THREE.Vector3(2, 2, -4)
+  const bezier3 = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(-13, 0, -25),
+    new THREE.Vector3(-10, 0, -30),
+    new THREE.Vector3(0, 0, -35),
+    new THREE.Vector3(6, 0, -32),
   );
-  // pointsPath.add(firstLine);
-  // pointsPath.add(secondLine);
-  // pointsPath.add(thirdLine);
-  pointsPath.add(bezierLine);
+
+  const bezier4 = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(6, 0, -32),
+    new THREE.Vector3(12, 0, -29),
+    new THREE.Vector3(17, 0, -25),
+    new THREE.Vector3(21, 0, -20),
+  );
+
+  const bezier5 = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(21, 0, -20),
+    new THREE.Vector3(25, 0, -15),
+    new THREE.Vector3(32, 0, -5),
+    new THREE.Vector3(20, 0, 5),
+  );
+
+  const bezier6 = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(20, 0, 5),
+    new THREE.Vector3(12, 0, 11),
+    new THREE.Vector3(1, 0, 7),
+    new THREE.Vector3(0, 0, 0),
+  );
+
+  pointsPath.add(bezier1);
+  pointsPath.add(bezier2);
+  pointsPath.add(bezier3);
+  pointsPath.add(bezier4);
+  pointsPath.add(bezier5);
+  pointsPath.add(bezier6);
+
+  const points = pointsPath.getPoints(60);
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(points),
+    new THREE.LineBasicMaterial({ color: 0xffffaa })
+  );
+  scene.add(line);
+
+  console.log(pointsPath.getSpacedPoints());
 }
 
 function updateArrow() {
@@ -67,19 +101,22 @@ function updateArrow() {
   const radians = Math.acos(up.dot(tangent));
   arrow.quaternion.setFromAxisAngle(axis, radians);
 
-  const cameraFranction = fraction - 0.25;
-  if (cameraFranction > 0) {
-    const newCameraPosition = pointsPath.getPoint(cameraFranction);
-    const cameraTangent = pointsPath.getTangent(cameraFranction);
-    camera.lookAt(newPosition);
-    camera.position.copy(newCameraPosition);
-  
-    cameraAxis.crossVectors(cameraUp, cameraTangent).normalize();
-    const cameraRadians = Math.acos(cameraUp.dot(cameraTangent));
-    camera.quaternion.setFromAxisAngle(cameraAxis, cameraRadians);
+  var cameraFranction = fraction - 0.05;
+  if (cameraFranction < 0) {
+    cameraFranction += 1;
   }
 
-  fraction += 0.001;
+  camera.lookAt(newPosition);
+  const newCameraPosition = pointsPath.getPoint(cameraFranction);
+  const cameraTangent = pointsPath.getTangent(cameraFranction);
+  camera.position.copy(newCameraPosition);
+  camera.position.y += 1;
+
+  cameraAxis.crossVectors(cameraUp, cameraTangent).normalize();
+  const cameraRadians = Math.acos(cameraUp.dot(cameraTangent));
+  camera.quaternion.setFromAxisAngle(cameraAxis, cameraRadians);
+
+  fraction += 0.0004;
   if (fraction > 1) {
     fraction = 0;
   }
@@ -87,10 +124,10 @@ function updateArrow() {
 
 function init() {
   camera = new THREE.PerspectiveCamera(
-    50,
+    45,
     window.innerWidth / window.innerHeight,
-    1,
-    1000
+    0.1,
+    5000
   );
   camera.position.z = 5;
 
@@ -111,30 +148,30 @@ function init() {
     arrow = model;
   });
 
-  loader.load("models/mercury/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(-2, 0, 0);
-    scene.add(model);
-  });
+  // loader.load("models/mercury/scene.gltf", function (gltf) {
+  //   const model = gltf.scene;
+  //   model.scale.set(0.1, 0.1, 0.1);
+  //   model.position.set(-2, 0, 0);
+  //   scene.add(model);
+  // });
 
-  loader.load("models/venus/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -100);
-    scene.add(model);
-  });
+  // loader.load("models/venus/scene.gltf", function (gltf) {
+  //   const model = gltf.scene;
+  //   model.scale.set(0.1, 0.1, 0.1);
+  //   model.position.set(2, 0, -90);
+  //   scene.add(model);
+  // });
 
-  loader.load("models/earth/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -100);
-    scene.add(model);
+  // loader.load("models/earth/scene.gltf", function (gltf) {
+  //   const model = gltf.scene;
+  //   model.scale.set(0.1, 0.1, 0.1);
+  //   model.position.set(2, 0, -100);
+  //   scene.add(model);
 
-    var mixer = new THREE.AnimationMixer(model); 
-    mixer.clipAction(gltf.animations[0]).play();
-    mixers.push(mixer);
-  });
+  //   var mixer = new THREE.AnimationMixer(model);
+  //   mixer.clipAction(gltf.animations[0]).play();
+  //   mixers.push(mixer);
+  // });
 
   // loader.load('models/mars/scene.gltf', function (gltf) {
   //   const model = gltf.scene
@@ -146,23 +183,6 @@ function init() {
   const light = new THREE.PointLight(0xffffff, 1);
   light.position.set(2, 2, 5);
   scene.add(light);
-
-  const somePoints = [
-    new THREE.Vector3(0.8, 0, -0.8),
-    new THREE.Vector3(0.8, 0.6, 0.8),
-    new THREE.Vector3(-0.8, 0, 0.8),
-    new THREE.Vector3(-0.8, 0.2, -0.8),
-  ];
-
-  const curve = new THREE.CatmullRomCurve3(somePoints);
-  curve.closed = true;
-
-  const points = curve.getPoints(60);
-  const line = new THREE.LineLoop(
-    new THREE.BufferGeometry().setFromPoints(points),
-    new THREE.LineBasicMaterial({ color: 0xffffaa })
-  );
-  scene.add(line);
 
   inializeArrow();
   scene.add(arrow);
@@ -202,7 +222,7 @@ function animateStars() {
 
   mixers.forEach((mixer) => {
     mixer.update(clock.getDelta());
-  })
+  });
 
   updateArrow();
 }
