@@ -2,6 +2,80 @@ import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 
+var pathPoints = [
+  [-8 + 0, 0, 0 + 12],
+  [-8 + -1, 0, -5 + 12],
+  [-8 + -2, 0, -8 + 12],
+  [-8 + -10, 0, -14 + 12],
+  [-8 + -11.5, 0, -15 + 12],
+  [-8 + -16, 0, -20 + 12],
+  [-8 + -13, 0, -25 + 12],
+  [-8 + -10, 0, -30 + 12],
+  [-8 + 0, 0, -35 + 12],
+  [-8 + 6, 0, -32 + 12],
+  [-8 + 12, 0, -29 + 12],
+  [-8 + 17, 0, -25 + 12],
+  [-8 + 21, 0, -20 + 12],
+  [-8 + 25, 0, -15 + 12],
+  [-8 + 32, 0, -5 + 12],
+  [-8 + 20, 0, 5 + 12],
+  [-8 + 12, 0, 11 + 12],
+  [-8 + 1, 0, 7 + 12],
+];
+
+var paths = [];
+function addPath(scale) {
+  var path = new THREE.CurvePath();
+
+  for (var i = 0; i < pathPoints.length; i += 3) {
+    let bezierPoints = [];
+    for (var j = i; j < i + 3; j++) {
+      bezierPoints.push(
+        new THREE.Vector3(
+          pathPoints[j][0] * scale,
+          pathPoints[j][1] * scale,
+          pathPoints[j][2] * scale
+        )
+      );
+    }
+
+    if (i + 3 == pathPoints.length) {
+      bezierPoints.push(
+        new THREE.Vector3(
+          pathPoints[0][0] * scale,
+          pathPoints[0][1] * scale,
+          pathPoints[0][2] * scale
+        )
+      );
+    } else {
+      bezierPoints.push(
+        new THREE.Vector3(
+          pathPoints[j][0] * scale,
+          pathPoints[j][1] * scale,
+          pathPoints[j][2] * scale
+        )
+      );
+    }
+
+    let bezier = new THREE.CubicBezierCurve3(
+      bezierPoints[0].multiplyScalar(scale),
+      bezierPoints[1].multiplyScalar(scale),
+      bezierPoints[2].multiplyScalar(scale),
+      bezierPoints[3].multiplyScalar(scale)
+    );
+    path.add(bezier);
+  }
+
+  const points = path.getPoints(60);
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(points),
+    new THREE.LineBasicMaterial({ color: 0xffffaa })
+  );
+  scene.add(line);
+
+  paths.push(path);
+}
+
 var camera;
 var scene;
 var renderer;
@@ -10,15 +84,14 @@ var clock;
 var mixers = [];
 
 var fraction = 0;
-var arrow;
+var rocket;
 const up = new THREE.Vector3(0, 0, -1);
 const axis = new THREE.Vector3();
-var pointsPath;
 
 const cameraUp = new THREE.Vector3(0, 0, -1);
 const cameraAxis = new THREE.Vector3();
 
-function inializeArrow() {
+function inializeRocket() {
   const material = new THREE.MeshNormalMaterial();
   const coneGeom = new THREE.ConeGeometry(1, 2, 10);
   coneGeom.translate(0, 2.5, 0);
@@ -29,57 +102,38 @@ function inializeArrow() {
   cylinder.merge(cone.geometry, cone.matrix);
   cylinder.scale(0.05, 0.05, 0.05);
 
-  arrow = new THREE.Mesh(cylinder, material);
-
-  pointsPath = new THREE.CurvePath();
-  const firstLine = new THREE.LineCurve3(
-    new THREE.Vector3(-1, 0, 0),
-    new THREE.Vector3(10, 0, 0)
-  );
-  const secondLine = new THREE.LineCurve3(
-    new THREE.Vector3(-1, 0, 0),
-    new THREE.Vector3(-1, 1, 0)
-  );
-
-  const thirdLine = new THREE.LineCurve3(
-    new THREE.Vector3(-1, 1, 0),
-    new THREE.Vector3(-1, 1, 1)
-  );
-
-  const bezierLine = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(0, 0, 2),
-    new THREE.Vector3(0, 1.5, 0),
-    new THREE.Vector3(2, 1.5, -2),
-    new THREE.Vector3(2, 2, -4)
-  );
-  // pointsPath.add(firstLine);
-  // pointsPath.add(secondLine);
-  // pointsPath.add(thirdLine);
-  pointsPath.add(bezierLine);
+  addPath(1.0);
+  addPath(1.01);
+  addPath(0.99);
+  addPath(1.02);
+  addPath(0.98);
 }
 
-function updateArrow() {
-  const newPosition = pointsPath.getPoint(fraction);
-  const tangent = pointsPath.getTangent(fraction);
-  arrow.position.copy(newPosition);
+function updateRocket() {
+  const newPosition = paths[0].getPoint(fraction);
+  const tangent = paths[0].getTangent(fraction);
+  rocket.position.copy(newPosition);
 
   axis.crossVectors(up, tangent).normalize();
   const radians = Math.acos(up.dot(tangent));
-  arrow.quaternion.setFromAxisAngle(axis, radians);
+  rocket.quaternion.setFromAxisAngle(axis, radians);
 
-  const cameraFranction = fraction - 0.25;
-  if (cameraFranction > 0) {
-    const newCameraPosition = pointsPath.getPoint(cameraFranction);
-    const cameraTangent = pointsPath.getTangent(cameraFranction);
-    camera.lookAt(newPosition);
-    camera.position.copy(newCameraPosition);
-  
-    cameraAxis.crossVectors(cameraUp, cameraTangent).normalize();
-    const cameraRadians = Math.acos(cameraUp.dot(cameraTangent));
-    camera.quaternion.setFromAxisAngle(cameraAxis, cameraRadians);
+  var cameraFranction = fraction - 0.025;
+  if (cameraFranction < 0) {
+    cameraFranction += 1;
   }
 
-  fraction += 0.001;
+  camera.lookAt(newPosition);
+  const newCameraPosition = paths[0].getPoint(cameraFranction);
+  const cameraTangent = paths[0].getTangent(cameraFranction);
+  camera.position.copy(newCameraPosition);
+  camera.position.y += 1;
+
+  cameraAxis.crossVectors(cameraUp, cameraTangent).normalize();
+  const cameraRadians = Math.acos(cameraUp.dot(cameraTangent));
+  // camera.quaternion.setFromAxisAngle(cameraAxis, cameraRadians);
+
+  fraction += 0.0004;
   if (fraction > 1) {
     fraction = 0;
   }
@@ -87,12 +141,13 @@ function updateArrow() {
 
 function init() {
   camera = new THREE.PerspectiveCamera(
-    50,
+    45,
     window.innerWidth / window.innerHeight,
-    1,
-    1000
+    0.1,
+    5000
   );
-  camera.position.z = 5;
+  camera.position.z = 0;
+  camera.position.y = 70;
 
   scene = new THREE.Scene();
 
@@ -107,34 +162,34 @@ function init() {
     const model = gltf.scene;
     model.scale.set(0.001, 0.001, 0.001);
     model.position.set(0, 0, 0);
-    scene.add(model);
-    arrow = model;
+    rocket = model;
+    scene.add(rocket);
   });
 
-  loader.load("models/mercury/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(-2, 0, 0);
-    scene.add(model);
-  });
+  // loader.load("models/mercury/scene.gltf", function (gltf) {
+  //   const model = gltf.scene;
+  //   model.scale.set(0.1, 0.1, 0.1);
+  //   model.position.set(-2, 0, 0);
+  //   scene.add(model);
+  // });
 
-  loader.load("models/venus/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -100);
-    scene.add(model);
-  });
+  // loader.load("models/venus/scene.gltf", function (gltf) {
+  //   const model = gltf.scene;
+  //   model.scale.set(0.1, 0.1, 0.1);
+  //   model.position.set(2, 0, -90);
+  //   scene.add(model);
+  // });
 
-  loader.load("models/earth/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -100);
-    scene.add(model);
+  // loader.load("models/earth/scene.gltf", function (gltf) {
+  //   const model = gltf.scene;
+  //   model.scale.set(0.1, 0.1, 0.1);
+  //   model.position.set(2, 0, -100);
+  //   scene.add(model);
 
-    var mixer = new THREE.AnimationMixer(model); 
-    mixer.clipAction(gltf.animations[0]).play();
-    mixers.push(mixer);
-  });
+  //   var mixer = new THREE.AnimationMixer(model);
+  //   mixer.clipAction(gltf.animations[0]).play();
+  //   mixers.push(mixer);
+  // });
 
   // loader.load('models/mars/scene.gltf', function (gltf) {
   //   const model = gltf.scene
@@ -147,25 +202,7 @@ function init() {
   light.position.set(2, 2, 5);
   scene.add(light);
 
-  const somePoints = [
-    new THREE.Vector3(0.8, 0, -0.8),
-    new THREE.Vector3(0.8, 0.6, 0.8),
-    new THREE.Vector3(-0.8, 0, 0.8),
-    new THREE.Vector3(-0.8, 0.2, -0.8),
-  ];
-
-  const curve = new THREE.CatmullRomCurve3(somePoints);
-  curve.closed = true;
-
-  const points = curve.getPoints(60);
-  const line = new THREE.LineLoop(
-    new THREE.BufferGeometry().setFromPoints(points),
-    new THREE.LineBasicMaterial({ color: 0xffffaa })
-  );
-  scene.add(line);
-
-  inializeArrow();
-  scene.add(arrow);
+  inializeRocket();
 }
 
 function addSphere() {
@@ -202,9 +239,11 @@ function animateStars() {
 
   mixers.forEach((mixer) => {
     mixer.update(clock.getDelta());
-  })
+  });
 
-  updateArrow();
+  if (rocket !== undefined) {
+    updateRocket();
+  }
 }
 
 function render() {
