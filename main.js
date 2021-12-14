@@ -3,24 +3,24 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/js
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 
 var pathPoints = [
-  [-8 + 0, 0, 0 + 12],
-  [-8 + -1, 0, -5 + 12],
-  [-8 + -2, 0, -8 + 12],
-  [-8 + -10, 0, -14 + 12],
-  [-8 + -11.5, 0, -15 + 12],
-  [-8 + -16, 0, -20 + 12],
-  [-8 + -13, 0, -25 + 12],
-  [-8 + -10, 0, -30 + 12],
-  [-8 + 0, 0, -35 + 12],
-  [-8 + 6, 0, -32 + 12],
-  [-8 + 12, 0, -29 + 12],
-  [-8 + 17, 0, -25 + 12],
-  [-8 + 21, 0, -20 + 12],
-  [-8 + 25, 0, -15 + 12],
-  [-8 + 32, 0, -5 + 12],
-  [-8 + 20, 0, 5 + 12],
-  [-8 + 12, 0, 11 + 12],
-  [-8 + 1, 0, 7 + 12],
+  [-8, 0, 12],
+  [-9, 0, 7],
+  [-10.5, 0, 3],
+  [-18, 0, -2],
+  [-19.5, 0, -3],
+  [-24, 0, -8],
+  [-21, 0, -13],
+  [-18, 0, -18],
+  [-8, 0, -23],
+  [-2, 0, -20],
+  [4, 0, -17],
+  [9, 0, -13],
+  [13, 0, -8],
+  [17, 0, -3],
+  [24, 0, 8],
+  [12, 0, 17],
+  [4, 0, 23],
+  [-7, 0, 19],
 ];
 
 var paths = [];
@@ -102,11 +102,11 @@ function inializeRocket() {
   cylinder.merge(cone.geometry, cone.matrix);
   cylinder.scale(0.05, 0.05, 0.05);
 
-  addPath(1.0);
-  addPath(1.01);
-  addPath(0.99);
-  addPath(1.02);
-  addPath(0.98);
+  addPath(1.5);
+  addPath(1.51);
+  addPath(1.49);
+  addPath(1.52);
+  addPath(1.48);
 }
 
 function updateRocket() {
@@ -118,7 +118,7 @@ function updateRocket() {
   const radians = Math.acos(up.dot(tangent));
   rocket.quaternion.setFromAxisAngle(axis, radians);
 
-  var cameraFranction = fraction - 0.025;
+  var cameraFranction = fraction - 0.015;
   if (cameraFranction < 0) {
     cameraFranction += 1;
   }
