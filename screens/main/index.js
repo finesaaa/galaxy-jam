@@ -238,7 +238,6 @@ function updateRocket() {
 
   camera.lookAt(newPosition);
   const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
-  const cameraTangent = paths[cameraIndex].getTangent(cameraFranction);
   camera.position.copy(newCameraPosition);
   camera.position.y += 1;
 

@@ -71,14 +71,54 @@ const rocketAttrs = {
   pathScaleAddition: 0.01,
 };
 
+const planetBaseScale = 1;
 const planetsAttrs = {
   mercury: {
     src: "./../../models/mercury/scene.gltf",
-    scale: 0.001,
-    initailPosition: {
-      x: 0,
-      y: 0,
-      z: 0,
-    },
+    scale: planetBaseScale * (1 / 277),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  venus: {
+    src: "./../../models/venus/scene.gltf",
+    scale: planetBaseScale * (1 / 113),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  earth: {
+    src: "./../../models/earth/scene.gltf",
+    scale: planetBaseScale * (1 / 108),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  mars: {
+    src: "./../../models/mars/scene.gltf",
+    scale: planetBaseScale * (1 / 208),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  jupiter: {
+    src: "./../../models/jupiter/scene.gltf",
+    scale: planetBaseScale * (1 / 9.7),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  saturn: {
+    src: "./../../models/saturn/scene.gltf",
+    scale: planetBaseScale * (1 / 11.4),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  uranus: {
+    src: "./../../models/uranus/scene.gltf",
+    scale: planetBaseScale * (1 / 26.8),
+    pathScale: 2.5,
+    pathFraction: 0.1
+  },
+  neptune: {
+    src: "./../../models/neptune/scene.gltf",
+    scale: planetBaseScale * (1 / 27.7),
+    pathScale: 2.5,
+    pathFraction: 0.1
   },
 };
