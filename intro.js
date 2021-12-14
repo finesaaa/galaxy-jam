@@ -15,6 +15,8 @@ const axis = new THREE.Vector3();
 var pointsPath;
 const text = "galaxy...";
 var textMeshs = [];
+var buttonMesh;
+var boundingBoxButton = null;
 
 function inializePath()
 {
@@ -75,6 +77,19 @@ function init() {
   const light = new THREE.PointLight(0xffffff, 2.4);
   light.position.set(2, 2, 5);
   scene.add(light);
+
+  var cubeTexture = new THREE.ImageUtils.loadTexture("textures/start.png"); 
+
+  const buttonGeometry = new THREE.BoxGeometry(1.09, 0.35, 0.25);
+  const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
+  buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+  buttonMesh.position.set(0.1, -0.7, -1);
+  buttonMesh.rotation.x = - Math.PI / 30;
+  scene.add(buttonMesh);
+
+  const boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x000000 );
+  boundingBoxButton.update();
+  scene.add( boundingBoxButton ); 
   
   inializePath();
 
@@ -169,6 +184,26 @@ function drawText()
     }
   }
 }
+
+var childWindow = "";
+var newTabUrl = "index.html";
+
+function onMouseDown(event) {
+  var x = event.clientX;
+  var y = event.clientY;
+  // if (
+  //     boundingBoxButton.min.z <= x &&
+  //     boundingBoxButton.max.z >= x &&
+  //     boundingBoxButton.max.y <= y &&
+  //     boundingBoxButton.min.y >= y &&
+  //     boundingBoxButton != null
+  // ) {
+  //   console.log("yey");
+  //   childWindow = window.open(newTabUrl);
+  // }
+  // console.log(boundingBoxButton.min.x);
+}
+document.addEventListener("mousedown", onMouseDown, false);
 
 function updateText()
 {
