@@ -13,7 +13,7 @@ var rocket;
 const up = new THREE.Vector3(0, 0, -1);
 const axis = new THREE.Vector3();
 var pointsPath;
-const text = "galaxy...";
+const text = "Mercury";
 var textMeshs = [];
 var buttonMesh;
 var boundingBoxButton = null;
@@ -24,10 +24,10 @@ function inializePath()
 
   pointsPath = new THREE.CurvePath();
   const line = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(1.0, 0, -0.8),
-    new THREE.Vector3(0.8, 1.0, 0.8),
-    new THREE.Vector3(-0.8, 0, 0.8),
-    new THREE.Vector3(-0.9, -0.2, -0.8),
+    new THREE.Vector3(-5.0, 1.0, -0.8),
+    new THREE.Vector3(3.8, 1.0, -0.8),
+    new THREE.Vector3(4.8, 1.0, -0.8),
+    new THREE.Vector3(5.0, 1.0, -0.8),
   );
   pointsPath.add(line);
 }
@@ -65,9 +65,9 @@ function init() {
   document.body.appendChild(renderer.domElement);
   
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load("models/rocket/scene.gltf", function (gltf) {
+  gltfLoader.load("models/mercury/scene.gltf", function (gltf) {
     const model = gltf.scene;
-    model.scale.set(0.0008, 0.0008, 0.0008);
+    model.scale.set(0.1, 0.1, 0.1);
     model.rotation.y = Math.PI * 1/3;
     model.position.set(0, 0.1, 0);
     scene.add(model);
@@ -78,23 +78,24 @@ function init() {
   light.position.set(2, 2, 5);
   scene.add(light);
 
-  var cubeTexture = new THREE.ImageUtils.loadTexture("textures/start.png"); 
+  //back button
+//   var cubeTexture = new THREE.ImageUtils.loadTexture("textures/start.png"); 
 
-  const buttonGeometry = new THREE.BoxGeometry(1.09, 0.35, 0.25);
-  const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
-  buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
-  buttonMesh.position.set(0.1, -0.7, -1);
-  buttonMesh.rotation.x = - Math.PI / 30;
-  scene.add(buttonMesh);
+//   const buttonGeometry = new THREE.BoxGeometry(1.09, 0.35, 0.25);
+//   const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
+//   buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+//   buttonMesh.position.set(-4.0, 1.9, -1);
+//   buttonMesh.rotation.x = - Math.PI / 30;
+//   scene.add(buttonMesh);
 
-  const boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x000000 );
-  boundingBoxButton.update();
-  scene.add( boundingBoxButton ); 
+//   const boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x000000 );
+//   boundingBoxButton.update();
+//   scene.add( boundingBoxButton ); 
   
   inializePath();
 
   const material = new THREE.LineBasicMaterial({
-    color: 0xffffaa
+    color: 0x000000
   });
   const pointsLine = pointsPath.curves.reduce((p, d)=> [...p, ...d.getPoints(20)], []);
   const geometry = new THREE.BufferGeometry().setFromPoints( pointsLine );
