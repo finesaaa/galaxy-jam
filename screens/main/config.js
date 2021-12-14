@@ -1,7 +1,7 @@
 const perspectiveAttrs = {
   fov: 45,
   near: 0.1,
-  far: 500,
+  far: 5000,
   initailPosition: {
     x: 0,
     y: 0,
@@ -82,43 +82,43 @@ const planetsAttrs = {
   venus: {
     src: "./../../models/venus/scene.gltf",
     scale: planetBaseScale * (1 / 113),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 3,
+    pathFraction: 0.2
   },
   earth: {
     src: "./../../models/earth/scene.gltf",
     scale: planetBaseScale * (1 / 108),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 4,
+    pathFraction: 0.3
   },
   mars: {
     src: "./../../models/mars/scene.gltf",
     scale: planetBaseScale * (1 / 208),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 4,
+    pathFraction: 0.4
   },
   jupiter: {
     src: "./../../models/jupiter/scene.gltf",
     scale: planetBaseScale * (1 / 9.7),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 4,
+    pathFraction: 0.5
   },
   saturn: {
     src: "./../../models/saturn/scene.gltf",
     scale: planetBaseScale * (1 / 11.4),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 4,
+    pathFraction: 0.6
   },
   uranus: {
     src: "./../../models/uranus/scene.gltf",
     scale: planetBaseScale * (1 / 26.8),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 4,
+    pathFraction: 0.7
   },
   neptune: {
     src: "./../../models/neptune/scene.gltf",
     scale: planetBaseScale * (1 / 27.7),
-    pathScale: 2.5,
-    pathFraction: 0.1
+    pathScale: 4,
+    pathFraction: 0.8
   },
 };

@@ -15,6 +15,8 @@ var rocket;
 var rocketIndex = 0;
 var fraction = 0;
 
+var planets = {};
+
 var stars = [];
 
 var mixers = [];
@@ -126,6 +128,27 @@ function addStar(zPosition, scale = starAttrs.scale) {
 
 function loadModels() {
   const loader = new GLTFLoader();
+
+  for (var key in planetsAttrs) {
+    let planetAttrs = planetsAttrs[key];
+
+    loader.load(planetAttrs.src, function (gltf) {
+      const model = gltf.scene;
+      model.scale.set(planetAttrs.scale, planetAttrs.scale, planetAttrs.scale);
+
+
+      addPath(planetAttrs.pathScale);
+      let modelPath = createPath(planetAttrs.pathScale);
+      let modelPosition = modelPath.getPoint(planetAttrs.pathFraction);
+      model.position.set(modelPosition.x, modelPosition.y, modelPosition.z);
+      scene.add(model);
+
+      var mixer = new THREE.AnimationMixer(model);
+      mixer.clipAction(gltf.animations[0]).play();
+      mixers.push(mixer);
+    });
+  }
+
   loader.load(rocketAttrs.src, function (gltf) {
     const model = gltf.scene;
     model.scale.set(rocketAttrs.scale, rocketAttrs.scale, rocketAttrs.scale);
@@ -136,38 +159,6 @@ function loadModels() {
     );
     rocket = model;
     scene.add(rocket);
-  });
-
-  loader.load("./../../models/mercury/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(0, 0, 0);
-    scene.add(model);
-  });
-
-  loader.load("./../../models/venus/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -90);
-    scene.add(model);
-  });
-
-  loader.load("./../../models/earth/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -100);
-    scene.add(model);
-
-    var mixer = new THREE.AnimationMixer(model);
-    mixer.clipAction(gltf.animations[0]).play();
-    mixers.push(mixer);
-  });
-
-  loader.load("./../../models/mars/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(-2, 0, -1000);
-    scene.add(model);
   });
 }
 
