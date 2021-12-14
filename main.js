@@ -2,11 +2,88 @@ import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 
-var camera,
-  scene,
-  renderer,
-  stars = [];
-var clock, mixer;
+var camera;
+var scene;
+var renderer;
+var stars = [];
+var clock;
+var mixers = [];
+
+var fraction = 0;
+var arrow;
+const up = new THREE.Vector3(0, 0, -1);
+const axis = new THREE.Vector3();
+var pointsPath;
+
+const cameraUp = new THREE.Vector3(0, 0, -1);
+const cameraAxis = new THREE.Vector3();
+
+function inializeArrow() {
+  const material = new THREE.MeshNormalMaterial();
+  const coneGeom = new THREE.ConeGeometry(1, 2, 10);
+  coneGeom.translate(0, 2.5, 0);
+
+  const cone = new THREE.Mesh(coneGeom, material);
+  const cylinder = new THREE.CylinderGeometry(0.4, 0.6, 3, 10);
+
+  cylinder.merge(cone.geometry, cone.matrix);
+  cylinder.scale(0.05, 0.05, 0.05);
+
+  arrow = new THREE.Mesh(cylinder, material);
+
+  pointsPath = new THREE.CurvePath();
+  const firstLine = new THREE.LineCurve3(
+    new THREE.Vector3(-1, 0, 0),
+    new THREE.Vector3(10, 0, 0)
+  );
+  const secondLine = new THREE.LineCurve3(
+    new THREE.Vector3(-1, 0, 0),
+    new THREE.Vector3(-1, 1, 0)
+  );
+
+  const thirdLine = new THREE.LineCurve3(
+    new THREE.Vector3(-1, 1, 0),
+    new THREE.Vector3(-1, 1, 1)
+  );
+
+  const bezierLine = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(0, 0, 2),
+    new THREE.Vector3(0, 1.5, 0),
+    new THREE.Vector3(2, 1.5, -2),
+    new THREE.Vector3(2, 2, -4)
+  );
+  // pointsPath.add(firstLine);
+  // pointsPath.add(secondLine);
+  // pointsPath.add(thirdLine);
+  pointsPath.add(bezierLine);
+}
+
+function updateArrow() {
+  const newPosition = pointsPath.getPoint(fraction);
+  const tangent = pointsPath.getTangent(fraction);
+  arrow.position.copy(newPosition);
+
+  axis.crossVectors(up, tangent).normalize();
+  const radians = Math.acos(up.dot(tangent));
+  arrow.quaternion.setFromAxisAngle(axis, radians);
+
+  const cameraFranction = fraction - 0.25;
+  if (cameraFranction > 0) {
+    const newCameraPosition = pointsPath.getPoint(cameraFranction);
+    const cameraTangent = pointsPath.getTangent(cameraFranction);
+    camera.lookAt(newPosition);
+    camera.position.copy(newCameraPosition);
+  
+    cameraAxis.crossVectors(cameraUp, cameraTangent).normalize();
+    const cameraRadians = Math.acos(cameraUp.dot(cameraTangent));
+    camera.quaternion.setFromAxisAngle(cameraAxis, cameraRadians);
+  }
+
+  fraction += 0.001;
+  if (fraction > 1) {
+    fraction = 0;
+  }
+}
 
 function init() {
   camera = new THREE.PerspectiveCamera(
@@ -27,24 +104,25 @@ function init() {
 
   const loader = new GLTFLoader();
   loader.load("models/rocket/scene.gltf", function (gltf) {
-    const root = gltf.scene;
-    root.scale.set(0.002, 0.002, 0.002);
-    root.position.set(0, 1, 0);
-    scene.add(root);
+    const model = gltf.scene;
+    model.scale.set(0.001, 0.001, 0.001);
+    model.position.set(0, 0, 0);
+    scene.add(model);
+    arrow = model;
   });
 
   loader.load("models/mercury/scene.gltf", function (gltf) {
-    const root = gltf.scene;
-    root.scale.set(0.1, 0.1, 0.1);
-    root.position.set(-2, 0, 0);
-    scene.add(root);
+    const model = gltf.scene;
+    model.scale.set(0.1, 0.1, 0.1);
+    model.position.set(-2, 0, 0);
+    scene.add(model);
   });
 
   loader.load("models/venus/scene.gltf", function (gltf) {
-    const root = gltf.scene;
-    root.scale.set(0.1, 0.1, 0.1);
-    root.position.set(2, 0, -100);
-    scene.add(root);
+    const model = gltf.scene;
+    model.scale.set(0.1, 0.1, 0.1);
+    model.position.set(2, 0, -100);
+    scene.add(model);
   });
 
   loader.load("models/earth/scene.gltf", function (gltf) {
@@ -53,8 +131,9 @@ function init() {
     model.position.set(2, 0, -100);
     scene.add(model);
 
-    mixer = new THREE.AnimationMixer(model);
+    var mixer = new THREE.AnimationMixer(model); 
     mixer.clipAction(gltf.animations[0]).play();
+    mixers.push(mixer);
   });
 
   // loader.load('models/mars/scene.gltf', function (gltf) {
@@ -84,6 +163,9 @@ function init() {
     new THREE.LineBasicMaterial({ color: 0xffffaa })
   );
   scene.add(line);
+
+  inializeArrow();
+  scene.add(arrow);
 }
 
 function addSphere() {
@@ -118,14 +200,19 @@ function animateStars() {
     }
   }
 
-  mixer.update(clock.getDelta());
+  mixers.forEach((mixer) => {
+    mixer.update(clock.getDelta());
+  })
+
+  updateArrow();
 }
 
 function render() {
-  requestAnimationFrame(render);
+  animateStars();
 
   renderer.render(scene, camera);
-  animateStars();
+
+  requestAnimationFrame(render);
 }
 
 init();
