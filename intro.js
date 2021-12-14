@@ -3,75 +3,91 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/js
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 import { Flow } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/modifiers/CurveModifier.js";
 
-var camera,
-  scene,
-  renderer,
-  stars = [];
+var camera;
+var scene;
+var renderer;
+var stars = [];
 
-camera = new THREE.PerspectiveCamera(
-  45,
-  window.innerWidth / window.innerHeight,
-  1,
-  1000
-);
-camera.position.z = 5;
+var fraction = 0;
+var rocket;
+const up = new THREE.Vector3(0, 0, -1);
+const axis = new THREE.Vector3();
+var pointsPath;
+const text = "galaxy...";
+var textMeshs = [];
 
-scene = new THREE.Scene();
+function inializePath()
+{
+  rocket = new THREE.Mesh();
 
-renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+  pointsPath = new THREE.CurvePath();
+  const line = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(1.0, 0, -0.8),
+    new THREE.Vector3(0.8, 1.0, 0.8),
+    new THREE.Vector3(-0.8, 0, 0.8),
+    new THREE.Vector3(-0.9, -0.2, -0.8),
+  );
+  pointsPath.add(line);
+}
 
-document.body.appendChild(renderer.domElement);
+function updatePath()
+{
+  const newPosition = pointsPath.getPoint(fraction);
+  const tangent = pointsPath.getTangent(fraction);
+  rocket.position.copy(newPosition);
 
-const light = new THREE.PointLight(0xffffff, 2.0);
-light.position.set(2, 2, 5);
-scene.add(light);
+  axis.crossVectors(up, tangent).normalize();
+  const radians = Math.acos(up.dot(tangent));
+  rocket.quaternion.setFromAxisAngle(axis, radians);
 
-const somePoints = [
-  new THREE.Vector3(1, 0, -1),
-  new THREE.Vector3(1, 0.6, 1),
-  new THREE.Vector3(-1, 0, 1),
-  new THREE.Vector3(-1, 0.2, -1),
-];
+  fraction += 0.001;
+  if (fraction > 1) {
+    fraction = 0;
+  }
+}
 
-const curve = new THREE.CatmullRomCurve3(somePoints);
-curve.closed = true;
-
-const points = curve.getPoints(60);
-const line = new THREE.LineLoop(
-  new THREE.BufferGeometry().setFromPoints(points),
-  new THREE.LineBasicMaterial({ color: 0xffffaa })
-);
-scene.add(line);
-
-const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-const material = new THREE.MeshPhongMaterial({
-  color: 0xffff00,
-  wireframe: false,
-});
-const objectToCurve = new THREE.Mesh(geometry, material);
-
-var flow;
-var flowUpdate = () => {};
-
-const gltfLoader = new GLTFLoader();
-gltfLoader.load("models/rocket/scene.gltf", function (gltf) {
-  const root = gltf.scene;
-  root.scale.set(0.05, 0.05, 0.05);
-  // root.position.set(0, 0, 0);
-  // scene.add(root);
-  flow = new Flow(gltf.asset);
-  flow.updateCurve(0, curve);
-  scene.add(flow.object3D);
-
-  flowUpdate = () => {
-    flow.moveAlongCurve(0.006);
-  };
-  gltf.scene.traverse(function (child) {
-    if (child.isMesh) {
-    }
+function init() {
+  camera = new THREE.PerspectiveCamera(
+    50,
+    window.innerWidth / window.innerHeight,
+    1,
+    1000
+  );
+  camera.position.z = 5;
+  
+  scene = new THREE.Scene();
+  
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  document.body.appendChild(renderer.domElement);
+  
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load("models/rocket/scene.gltf", function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(0.0008, 0.0008, 0.0008);
+    model.rotation.y = Math.PI * 1/3;
+    model.position.set(0, 0.1, 0);
+    scene.add(model);
+    rocket = model;
   });
-});
+  
+  const light = new THREE.PointLight(0xffffff, 2.0);
+  light.position.set(2, 2, 5);
+  scene.add(light);
+  
+  inializePath();
+
+  const material = new THREE.LineBasicMaterial({
+    color: 0xffffaa
+  });
+  const pointsLine = pointsPath.curves.reduce((p, d)=> [...p, ...d.getPoints(20)], []);
+  const geometry = new THREE.BufferGeometry().setFromPoints( pointsLine );
+  const pathLine = new THREE.Line( geometry, material );
+  scene.add(pathLine);
+
+  scene.add(rocket);
+}
 
 function addSphere() {
   for (var z = -1000; z < 1000; z += 20) {
@@ -104,34 +120,83 @@ function animateStars() {
       star.position.z -= 2000;
     }
   }
+
+  updatePath();
+
+  updateText();
 }
 
-const fontLoader = new THREE.FontLoader();
+var change = [];
+var speed = [];
+function drawText()
+{
+  const fontLoader = new THREE.FontLoader();
 
-fontLoader.load("/fonts/poppins-semibold.json", function (font) {
-  var textGeo = new THREE.TextGeometry("g a l a x y . . .", {
-    font: font,
-    size: 0.2,
-    height: 0.1,
-    bevelEnabled: false,
-  });
+  for (let i = 0; i <= text.length; i++)
+  {
+    fontLoader.load("fonts/poppins-semibold.json", function (font) {
+      var textGeo = new THREE.TextGeometry(text.charAt(i), {
+        font: font,
+        size: 0.2,
+        height: 0.1,
+        bevelEnabled: false,
+      });
+  
+      var textMaterial = new THREE.MeshPhongMaterial({
+        color: 0xdddddd,
+      });
+      textMeshs[i] = new THREE.Mesh(textGeo, textMaterial);
+      var addition = 0.25;
+      if (i == 3)
+        addition -= 0.1
+        
+      if (i > 0)
+        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 0, 1);
+      else
+        textMeshs[i].position.set(-0.75, 0, 1);
+      scene.add(textMeshs[i]);
+    });
+    
+    if (i % 2 == 0)
+    {
+      change[i] = -0.02;
+      speed[i] = -1/1000;
+    }
+    else
+    {
+      change[i] = 0.02;
+      speed[i] = 1/1000;
+    }
+  }
+}
 
-  var textMaterial = new THREE.MeshPhongMaterial({
-    color: 0xdddddd,
-  });
-  var mesh = new THREE.Mesh(textGeo, textMaterial);
-  mesh.position.set(-0.75, 0, 1);
-  scene.add(mesh);
-});
+function updateText()
+{
+  if (textMeshs.length >= text.length)
+  {
+    for (let i = 0; i < textMeshs.length; i++)
+    {
+      if (Math.abs(change[i]) >= 0.04)
+      {
+        change[i] = 0;
+        speed[i] = -speed[i];
+      }
+      
+      textMeshs[i].position.y += speed[i];
+      change[i] += speed[i];
+    }
+  }
+}
 
 function render() {
-  requestAnimationFrame(render);
-
-  flowUpdate();
+  animateStars();
 
   renderer.render(scene, camera);
-  animateStars();
+
+  requestAnimationFrame(render);
 }
 
+init();
+drawText();
 addSphere();
 render();
