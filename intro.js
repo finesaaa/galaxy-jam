@@ -72,7 +72,7 @@ function init() {
     rocket = model;
   });
   
-  const light = new THREE.PointLight(0xffffff, 2.0);
+  const light = new THREE.PointLight(0xffffff, 2.4);
   light.position.set(2, 2, 5);
   scene.add(light);
   
