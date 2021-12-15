@@ -51,8 +51,8 @@ const objectsAttrs = {
   },
   mercuryAttrs: {
     name: "mercury",
-    src: "./../../../assets/models/mercury/scene.gltf",
-    scale: 0.07,
+    src: "./../../../assets/models/saturn/scene.gltf",
+    scale: 0.0006,
     initailPosition: {
       x: 0,
       y: 0,

@@ -50,13 +50,13 @@ const objectsAttrs = {
     },
   },
   mercuryAttrs: {
-    name: "venus",
-    src: "./../../../assets/models/venus/scene.gltf",
-    scale: 0.5,
+    name: "mercury",
+    src: "./../../../assets/models/uranus/scene.gltf",
+    scale: 0.001,
     initailPosition: {
       x: 0,
       y: 0,
-      z: 0,
+      z: -2,
     },
     rotationSpeed: Math.PI / 1000,
   },
