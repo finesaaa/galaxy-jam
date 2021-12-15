@@ -1,0 +1,24 @@
+{
+  "name": "final-project-bismillah-tahun-terakhir",
+  "version": "1.0.0",
+  "description": "- 05111940000143  -  Muchamad Maroqi Abdul Jalil\r - 05111940000015  -  Fiqey Indriati Eka Sari\r - 05111940000047  -  Dyah Putri Nariswari\r - 05111940000020  -  Nur Putra Khanafi\r - 05111940000005  -  Muh. Nur Fajrin Amiruddin\r - 05111940000138  -  Achmad Akbar Irwanda",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cg2021e/final-project-bismillah-tahun-terakhir.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cg2021e/final-project-bismillah-tahun-terakhir/issues"
+  },
+  "homepage": "https://github.com/cg2021e/final-project-bismillah-tahun-terakhir#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "three": "^0.135.0"
+  }
+}
