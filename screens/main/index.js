@@ -257,7 +257,7 @@ function updateRocket() {
   if (perspectiveAttrs.followRocket.enabled) {
     const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
     camera.position.copy(newCameraPosition);
-    camera.position.y -= 4;
+    camera.position.y += 1;
   }
 
   rocketFraction += rocketAttrs.speed;

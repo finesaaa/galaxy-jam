@@ -65,7 +65,7 @@ function init() {
   document.body.appendChild(renderer.domElement);
   
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load("./../../models/mercury/scene.gltf", function (gltf) {
+  gltfLoader.load("./../../../assets/models/mercury/scene.gltf", function (gltf) {
     const model = gltf.scene;
     model.scale.set(0.1, 0.1, 0.1);
     model.rotation.y = Math.PI * 1/3;
