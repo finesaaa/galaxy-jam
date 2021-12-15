@@ -36,7 +36,7 @@ function initializeLight() {
 function addStar(zPosition, scale = starAttrs.scale) {
   var geometry = new THREE.SphereGeometry(
     starAttrs.radius,
-    starAttrs.widthSegnments,
+    starAttrs.widthSegments,
     starAttrs.heightSegments
   );
   var material = new THREE.MeshBasicMaterial({
@@ -115,12 +115,6 @@ function initializeWorld() {
 
   control = new OrbitControls(camera, renderer.domElement);
 
-  control.mouseButtons = {
-    LEFT: THREE.MOUSE.ROTATE,
-    MIDDLE: THREE.MOUSE.DOLLY,
-    RIGHT: THREE.MOUSE.PAN
-  }
-
   loader = new GLTFLoader();
 
   clock = new THREE.Clock();
@@ -146,9 +140,9 @@ function updateObjects() {
     mixer.update(clock.getDelta());
   });
 
-  var mercury = objectsModel[objectsAttrs.mercuryAttrs.name];
-  if (mercury !== undefined) {
-    mercury.rotation.y += objectsAttrs.mercuryAttrs.rotationSpeed;
+  var venus = objectsModel[objectsAttrs.venusAttrs.name];
+  if (venus !== undefined) {
+    venus.rotation.y += objectsAttrs.venusAttrs.rotationSpeed;
   }
 }
 
@@ -156,7 +150,6 @@ function render() {
   updateObjects();
 
   control.update();
-
   renderer.render(scene, camera);
 
   requestAnimationFrame(render);

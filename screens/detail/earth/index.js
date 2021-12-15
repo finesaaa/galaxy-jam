@@ -115,12 +115,6 @@ function initializeWorld() {
 
   control = new OrbitControls(camera, renderer.domElement);
 
-  control.mouseButtons = {
-    LEFT: THREE.MOUSE.ROTATE,
-    MIDDLE: THREE.MOUSE.DOLLY,
-    RIGHT: THREE.MOUSE.PAN
-  }
-
   loader = new GLTFLoader();
 
   clock = new THREE.Clock();
@@ -156,7 +150,6 @@ function render() {
   updateObjects();
 
   control.update();
-
   renderer.render(scene, camera);
 
   requestAnimationFrame(render);
