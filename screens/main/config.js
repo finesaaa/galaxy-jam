@@ -63,7 +63,7 @@ const pathLineAttrs = {
 };
 
 const rocketAttrs = {
-  src: "./../../assets/models/rocket/scene.gltf",
+  src: "./../../assets/models/rocket-astro/scene.gltf",
   scale: 0.001,
   initailPosition: {
     x: 0,

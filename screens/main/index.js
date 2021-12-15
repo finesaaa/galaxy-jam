@@ -16,7 +16,7 @@ var paths = [];
 var rocket;
 var rocketIndex = 0;
 var rocketFraction = 0;
-var rocketDir = new THREE.Vector3(0, 0, 1);
+var rocketDir = new THREE.Vector3(0, 0, -1);
 var rocketAxis = new THREE.Vector3();
 
 var planetsModel = {};
@@ -209,8 +209,8 @@ function initializeWorld() {
   camera = new THREE.PerspectiveCamera(
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
+    perspectiveAttrs.near,
     perspectiveAttrs.far,
-    perspectiveAttrs.near
   );
   camera.position.x = perspectiveAttrs.initailPosition.x;
   camera.position.y = perspectiveAttrs.initailPosition.y;
