@@ -1,11 +1,11 @@
 const perspectiveAttrs = {
-  fov: 50,
+  fov: 45,
   near: 0.1,
   far: 500,
   initailPosition: {
     x: 0,
     y: 0,
-    z: 0,
+    z: 1.6,
   },
 };
 

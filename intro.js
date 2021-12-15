@@ -6,6 +6,7 @@ import { Flow } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/modifie
 var camera;
 var scene;
 var renderer;
+var clock;
 var stars = [];
 
 var fraction = 0;
@@ -61,6 +62,8 @@ function init() {
   
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
+
+  clock = new THREE.Clock();
   
   document.body.appendChild(renderer.domElement);
   
@@ -84,10 +87,9 @@ function init() {
   const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
   buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
   buttonMesh.position.set(0.1, -0.7, -1);
-  buttonMesh.rotation.x = - Math.PI / 30;
   scene.add(buttonMesh);
 
-  boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x000000 );
+  boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x00FFBD59 );
   boundingBoxButton.update();
   scene.add( boundingBoxButton ); 
   
@@ -139,6 +141,13 @@ function animateStars() {
   updatePath();
 
   updateText();
+
+  if (clock !== undefined)
+    time += clock.getDelta();
+
+  sessionStorage.setItem("introTime", time);
+
+  console.log(time);
 }
 
 var change = [];
@@ -186,13 +195,13 @@ function drawText()
 }
 
 var childWindow = "";
-var newTabUrl = "index.html";
+var newTabUrl = "screens/intro/index.html";
 
 function onMouseDown(event) {
   var posRender = new THREE.Vector2();
   posRender = renderer.getSize();
-  var x = ( (event.clientX - 0) / posRender.x ) * 2.5 - 1;
-  var y = - ( (event.clientY - 0) / posRender.y ) * 2.8 + 1;
+  var x = ( event.clientX / window.innerWidth ) * 2.5 - 1;
+  var y = - ( event.clientY / window.innerHeight ) * 2.8 + 1;
   var boxPos = boundingBoxButton.geometry.attributes.position.array;
   if (
       boxPos[0] >= x &&
@@ -200,9 +209,9 @@ function onMouseDown(event) {
       boxPos[1] >= y &&
       boxPos[7] <= y 
   ) {
-    childWindow = window.open(newTabUrl);
+    childWindow = window.open(newTabUrl, "_self");
   }
-  // console.log(x, y);
+  console.log(x, y);
   // console.log( boxPos[3] );
 }
 document.addEventListener("mousedown", onMouseDown, false);
@@ -224,6 +233,8 @@ function updateText()
     }
   }
 }
+
+var time = 0;
 
 function render() {
   animateStars();

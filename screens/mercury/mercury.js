@@ -65,7 +65,7 @@ function init() {
   document.body.appendChild(renderer.domElement);
   
   const gltfLoader = new GLTFLoader();
-  gltfLoader.load("models/mercury/scene.gltf", function (gltf) {
+  gltfLoader.load("./../../models/mercury/scene.gltf", function (gltf) {
     const model = gltf.scene;
     model.scale.set(0.1, 0.1, 0.1);
     model.rotation.y = Math.PI * 1/3;
@@ -150,7 +150,7 @@ function drawText()
 
   for (let i = 0; i <= text.length; i++)
   {
-    fontLoader.load("fonts/poppins-semibold.json", function (font) {
+    fontLoader.load("./../../fonts/poppins-semibold.json", function (font) {
       var textGeo = new THREE.TextGeometry(text.charAt(i), {
         font: font,
         size: 0.2,
@@ -185,26 +185,6 @@ function drawText()
     }
   }
 }
-
-var childWindow = "";
-var newTabUrl = "index.html";
-
-function onMouseDown(event) {
-  var x = event.clientX;
-  var y = event.clientY;
-  // if (
-  //     boundingBoxButton.min.z <= x &&
-  //     boundingBoxButton.max.z >= x &&
-  //     boundingBoxButton.max.y <= y &&
-  //     boundingBoxButton.min.y >= y &&
-  //     boundingBoxButton != null
-  // ) {
-  //   console.log("yey");
-  //   childWindow = window.open(newTabUrl);
-  // }
-  // console.log(boundingBoxButton.min.x);
-}
-document.addEventListener("mousedown", onMouseDown, false);
 
 function updateText()
 {
