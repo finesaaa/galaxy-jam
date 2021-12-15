@@ -1,7 +1,7 @@
 const perspectiveAttrs = {
   fov: 45,
-  near: 0.1,
-  far: 500,
+  near: 1,
+  far: 3000,
   initialPosition: {
     x: 0,
     y: 0,
@@ -39,6 +39,16 @@ const rocketAttrs = {
     x: 0,
     y: 1,
     z: 490,
+  },
+};
+
+const sunAttrs = {
+  src: "./../../assets/models/sun/scene.gltf",
+  scale: 2.2,
+  initialPosition: {
+    x: 0,
+    y: 10.96,
+    z: 520,
   },
 };
 

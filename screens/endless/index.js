@@ -15,6 +15,10 @@ var scene;
 
 var rocket;
 var rocketActions;
+
+var sun;
+var sunActions;
+
 var mixers = [];
 
 var movingLeft = false;
@@ -70,10 +74,26 @@ function loadModels() {
     );
     rocket = model;
     rocket.rotation.y = -Math.PI / 2;
+    rocket.rotation.z = Math.PI / 18;
     scene.add(rocket);
 
     rocketActions = new THREE.AnimationMixer(model);
     rocketActions.clipAction(gltf.animations[0]).play();
+  });
+
+  loader.load(sunAttrs.src, function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(sunAttrs.scale, sunAttrs.scale, sunAttrs.scale);
+    model.position.set(
+      sunAttrs.initialPosition.x,
+      sunAttrs.initialPosition.y,
+      sunAttrs.initialPosition.z
+    );
+    sun = model;
+    scene.add(sun);
+
+    sunActions = new THREE.AnimationMixer(model);
+    sunActions.clipAction(gltf.animations[0]).play();
   });
 }
 
@@ -88,6 +108,8 @@ function inializeObjects() {
 }
 
 function initializeWorld() {
+  scene = new THREE.Scene();
+
   camera = new THREE.PerspectiveCamera(
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
@@ -96,12 +118,12 @@ function initializeWorld() {
   );
   camera.position.set(
     cameraPositionXStart,
-    10,
+    10.6,
     PLANE_LENGTH / 2 + PLANE_LENGTH / 25 - cameraPositionZStart
   );
   camera.rotation.y = (cameraDegreesStart * Math.PI) / 180;
 
-  scene = new THREE.Scene();
+  scene.add(camera);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
