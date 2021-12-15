@@ -5,6 +5,7 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/l
 var scene;
 var renderer;
 var clock;
+var loader;
 
 var camera;
 var cameraIndex = 0;
@@ -138,7 +139,6 @@ function addStar(zPosition, scale = starAttrs.scale) {
 }
 
 function loadModels() {
-  const loader = new GLTFLoader();
   loader.load(rocketAttrs.src, function (gltf) {
     const model = gltf.scene;
     model.scale.set(rocketAttrs.scale, rocketAttrs.scale, rocketAttrs.scale);
@@ -147,13 +147,19 @@ function loadModels() {
       rocketAttrs.initailPosition.y,
       rocketAttrs.initailPosition.z
     );
+
     model.traverse(function (child) {
       if (child.isMesh) {
         child.castShadow = true;
       }
     });
+      
+    let mixer = new THREE.AnimationMixer(model);
+    mixer.clipAction(gltf.animations[0]).play();
+    mixers.push(mixer);
 
     rocket = model;
+
     scene.add(rocket);
   });
 
@@ -173,15 +179,16 @@ function loadModels() {
       let modelPath = createPath(planetAttrs.pathScale);
       let modelPosition = modelPath.getPoint(planetAttrs.pathFraction);
       model.position.set(modelPosition.x, modelPosition.y, modelPosition.z);
-      scene.add(model);
-
-      var mixer = new THREE.AnimationMixer(model);
+      
+      let mixer = new THREE.AnimationMixer(model);
       mixer.clipAction(gltf.animations[0]).play();
       mixers.push(mixer);
-
+      
       planetsModel[planetAttrs.name] = model;
       planetsPath[planetAttrs.name] = modelPath;
       planetsFraction[planetAttrs.name] = planetAttrs.pathFraction;
+
+      scene.add(model);
     });
   }
 }
@@ -225,6 +232,8 @@ function initializeWorld() {
 
   clock = new THREE.Clock();
 
+  loader = new GLTFLoader();
+
   const light = new THREE.PointLight(lightAttrs.color, lightAttrs.intensity);
   light.position.set(
     lightAttrs.initailPosition.x,
@@ -257,7 +266,7 @@ function updateRocket() {
   if (perspectiveAttrs.followRocket.enabled) {
     const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
     camera.position.copy(newCameraPosition);
-    camera.position.y += 1;
+    camera.position.y += perspectiveAttrs.followRocket.additionalY;
   }
 
   rocketFraction += rocketAttrs.speed;
@@ -276,18 +285,18 @@ function updateRocket() {
   }
 }
 
-function animateObjects() {
+function updateObjects() {
   for (var i = 0; i < stars.length; i++) {
     var star = stars[i];
 
-    star.position.z += i / 100;
+    star.position.z += i / starAttrs.speed;
 
-    if (star.position.z > 1000) {
-      star.position.z -= 2000;
+    if (star.position.z > starAttrs.position.zMax) {
+      star.position.z -= (starAttrs.position.zMax * 2);
     }
   }
 
-  mixers.forEach((mixer) => {
+  mixers.forEach(function(mixer) {
     mixer.update(clock.getDelta());
   });
 
@@ -297,7 +306,7 @@ function animateObjects() {
 }
 
 function render() {
-  animateObjects();
+  updateObjects();
 
   renderer.render(scene, camera);
 

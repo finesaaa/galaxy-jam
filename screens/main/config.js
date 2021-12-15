@@ -9,7 +9,8 @@ const perspectiveAttrs = {
   },
   followRocket: {
     enabled: true,
-    subtraction: 0.005,
+    subtraction: 0.0015,
+    additionalY: 0.5,
   },
 };
 
@@ -33,7 +34,8 @@ const starAttrs = {
     zMin: -2000,
     zMax: 2000,
     zGap: 20,
-  }
+  },
+  speed: 100,
 };
 
 const pathLineAttrs = {
@@ -59,7 +61,7 @@ const pathLineAttrs = {
     [4, 0, 23],
     [-7, 0, 18],
   ],
-  isDrawLines: false,
+  isDrawLines: true,
 };
 
 const rocketAttrs = {
