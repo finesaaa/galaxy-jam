@@ -20,6 +20,11 @@ var rocketFraction = 0;
 var rocketDir = new THREE.Vector3(0, 0, -1);
 var rocketAxis = new THREE.Vector3();
 
+var rocketMovement = 0;
+var dRocketMovement = rocketAttrs.movement.delta;
+var isRocketMove = false;
+var rocketIndexBefore = 0;
+
 var planetsModel = {};
 var planetsPath = {};
 var planetsFraction = {};
@@ -31,12 +36,16 @@ var mixers = [];
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97) {
     // A atau a
-    if (rocketIndex - 1 >= 0) {
+    if (rocketIndex - 1 >= 0 && !isRocketMove) {
+      rocketIndexBefore = rocketIndex;
+      isRocketMove = true;
       rocketIndex -= 1;
     }
   } else if (event.keyCode == 68 || event.keyCode == 100) {
     // D atau d
-    if (rocketIndex + 1 < paths.length) {
+    if (rocketIndex + 1 < paths.length && !isRocketMove) {
+      rocketIndexBefore = rocketIndex;
+      isRocketMove = true;
       rocketIndex += 1;
     }
   } else if (event.keyCode == 87 || event.keyCode == 119) {
@@ -153,7 +162,7 @@ function loadModels() {
         child.castShadow = true;
       }
     });
-      
+
     let mixer = new THREE.AnimationMixer(model);
     mixer.clipAction(gltf.animations[0]).play();
     mixers.push(mixer);
@@ -176,14 +185,14 @@ function loadModels() {
         }
       });
 
-      let modelPath = createPath(planetAttrs.pathScale);
+      let modelPath = createPath(planetAttrs.path.scale);
       let modelPosition = modelPath.getPoint(planetAttrs.pathFraction);
       model.position.set(modelPosition.x, modelPosition.y, modelPosition.z);
-      
+
       let mixer = new THREE.AnimationMixer(model);
       mixer.clipAction(gltf.animations[0]).play();
       mixers.push(mixer);
-      
+
       planetsModel[planetAttrs.name] = model;
       planetsPath[planetAttrs.name] = modelPath;
       planetsFraction[planetAttrs.name] = planetAttrs.pathFraction;
@@ -194,13 +203,14 @@ function loadModels() {
 }
 
 function inializeObjects() {
-  var middlePathIndex = Math.floor(rocketAttrs.pathNum / 2);
-  for (var i = 0; i < rocketAttrs.pathNum; i++) {
-    var additionalScale = (middlePathIndex - i) * rocketAttrs.pathScaleAddition;
-    addPath(rocketAttrs.pathScale + additionalScale);
+  var middlePathIndex = Math.floor(rocketAttrs.path.num / 2);
+  for (var i = 0; i < rocketAttrs.path.num; i++) {
+    var additionalScale = (middlePathIndex - i) * rocketAttrs.path.scaleAddition;
+    addPath(rocketAttrs.path.scale + additionalScale);
   }
 
   rocketIndex = Math.floor(paths.length / 2);
+  rocketIndexBefore = rocketIndex;
   cameraIndex = rocketIndex;
 
   for (
@@ -217,7 +227,7 @@ function initializeWorld() {
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
     perspectiveAttrs.near,
-    perspectiveAttrs.far,
+    perspectiveAttrs.far
   );
   camera.position.x = perspectiveAttrs.initailPosition.x;
   camera.position.y = perspectiveAttrs.initailPosition.y;
@@ -247,9 +257,40 @@ function initializeWorld() {
   inializeObjects();
 }
 
+function interpolation(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function ease(t) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
 function updateRocket() {
-  const newPosition = paths[rocketIndex].getPoint(rocketFraction);
-  const tangent = paths[rocketIndex].getTangent(rocketFraction);
+  var middlePathIndex = Math.floor(rocketAttrs.path.num / 2);
+  var additionalFraction = (middlePathIndex - rocketIndex) * rocketAttrs.path.scaleAddition;
+
+  const nextPosition = paths[rocketIndex].getPoint(rocketFraction + additionalFraction);
+  const tangent = paths[rocketIndex].getTangent(rocketFraction + additionalFraction);
+  
+  var newX = nextPosition.x;
+  var newY = nextPosition.y;
+  var newZ = nextPosition.z;
+  
+  if (isRocketMove) {
+    rocketMovement += dRocketMovement;
+    if (rocketMovement >= 1) {
+      rocketMovement = 0;
+      isRocketMove = false;
+      rocketIndexBefore = rocketIndex;
+    }
+
+    const currentPosition = paths[rocketIndexBefore].getPoint(rocketFraction + additionalFraction);
+    newX = interpolation(currentPosition.x, nextPosition.x, ease(t));
+    newY = interpolation(currentPosition.y, nextPosition.y, ease(t));
+    newZ = interpolation(currentPosition.z, nextPosition.z, ease(t));
+  }
+  const newPosition = new THREE.Vector3(newX, newY, newZ);
+
   rocket.position.copy(newPosition);
 
   rocketAxis.crossVectors(rocketDir, tangent).normalize();
@@ -262,14 +303,20 @@ function updateRocket() {
     cameraFranction += 1;
   }
 
-  camera.lookAt(newPosition);
+  camera.lookAt(
+    new THREE.Vector3(
+      newPosition.x,
+      newPosition.y + perspectiveAttrs.followRocket.additionalY * 0.5,
+      newPosition.z
+    )
+  );
   if (perspectiveAttrs.followRocket.enabled) {
     const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
     camera.position.copy(newCameraPosition);
     camera.position.y += perspectiveAttrs.followRocket.additionalY;
   }
 
-  rocketFraction += rocketAttrs.speed;
+  rocketFraction += rocketAttrs.movement.speed;
   if (rocketFraction > 1) {
     rocketFraction = 0;
   }
@@ -292,12 +339,13 @@ function updateObjects() {
     star.position.z += i / starAttrs.speed;
 
     if (star.position.z > starAttrs.position.zMax) {
-      star.position.z -= (starAttrs.position.zMax * 2);
+      star.position.z -= starAttrs.position.zMax * 2;
     }
   }
 
-  mixers.forEach(function(mixer) {
-    mixer.update(clock.getDelta());
+  var deltaSec = clock.getDelta();
+  mixers.forEach(function (mixer) {
+    mixer.update(deltaSec);
   });
 
   if (rocket !== undefined) {
