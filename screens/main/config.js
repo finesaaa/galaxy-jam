@@ -4,8 +4,8 @@ const perspectiveAttrs = {
   far: 5000,
   initailPosition: {
     x: 0,
-    y: 0,
-    z: 5,
+    y: 700,
+    z: 70,
   },
 };
 
@@ -74,51 +74,59 @@ const rocketAttrs = {
 const planetBaseScale = 1;
 const planetsAttrs = {
   mercury: {
+    name: "mercury",
     src: "./../../models/mercury/scene.gltf",
     scale: planetBaseScale * (1 / 277),
     pathScale: 2.5,
     pathFraction: 0.1
   },
   venus: {
+    name: "venus",
     src: "./../../models/venus/scene.gltf",
     scale: planetBaseScale * (1 / 113),
     pathScale: 3,
     pathFraction: 0.2
   },
   earth: {
+    name: "earth",
     src: "./../../models/earth/scene.gltf",
     scale: planetBaseScale * (1 / 108),
-    pathScale: 4,
+    pathScale: 3,
     pathFraction: 0.3
   },
   mars: {
+    name: "mars",
     src: "./../../models/mars/scene.gltf",
     scale: planetBaseScale * (1 / 208),
-    pathScale: 4,
-    pathFraction: 0.4
-  },
-  jupiter: {
-    src: "./../../models/jupiter/scene.gltf",
-    scale: planetBaseScale * (1 / 9.7),
-    pathScale: 4,
+    pathScale: 3,
     pathFraction: 0.5
   },
+  jupiter: {
+    name: "jupiter",
+    src: "./../../models/jupiter/scene.gltf",
+    scale: planetBaseScale * (1 / 9.7),
+    pathScale: 5,
+    pathFraction: 0.6
+  },
   saturn: {
+    name: "saturn",
     src: "./../../models/saturn/scene.gltf",
     scale: planetBaseScale * (1 / 11.4),
     pathScale: 4,
-    pathFraction: 0.6
+    pathFraction: 0.8
   },
   uranus: {
+    name: "uranus",
     src: "./../../models/uranus/scene.gltf",
     scale: planetBaseScale * (1 / 26.8),
     pathScale: 4,
-    pathFraction: 0.7
+    pathFraction: 0.9
   },
   neptune: {
+    name: "neptune",
     src: "./../../models/neptune/scene.gltf",
     scale: planetBaseScale * (1 / 27.7),
-    pathScale: 4,
-    pathFraction: 0.8
+    pathScale: 3,
+    pathFraction: 0
   },
 };
