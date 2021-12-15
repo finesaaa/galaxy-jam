@@ -1,5 +1,5 @@
 const perspectiveAttrs = {
-  fov: 45,
+  fov: 50,
   near: 0.1,
   far: 5000,
   initailPosition: {
@@ -15,7 +15,7 @@ const perspectiveAttrs = {
 
 const lightAttrs = {
   color: 0xffffff,
-  intensity: 1,
+  intensity: 2.4,
   initailPosition: {
     x: 2,
     y: 2,
