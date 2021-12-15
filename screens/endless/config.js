@@ -44,11 +44,11 @@ const rocketAttrs = {
 
 const sunAttrs = {
   src: "./../../assets/models/sun/scene.gltf",
-  scale: 2.2,
+  scale: 360,
   initialPosition: {
     x: 0,
-    y: 10.96,
-    z: 520,
+    y: 10.5,
+    z: -650,
   },
 };
 

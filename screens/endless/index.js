@@ -41,6 +41,12 @@ var cameraInitialTimestamp = null;
 
 var stars = [];
 
+const text = "galaxy...";
+var textMeshs = [];
+
+var buttonMesh;
+var boundingBoxButton = null;
+
 function addStar(zPosition, scale = starAttrs.scale) {
   var geometry = new THREE.SphereGeometry(
     starAttrs.radius,
@@ -73,8 +79,8 @@ function loadModels() {
       rocketAttrs.initialPosition.z
     );
     rocket = model;
-    rocket.rotation.y = -Math.PI / 2;
-    rocket.rotation.z = Math.PI / 18;
+    rocket.rotation.y = - Math.PI / 5;
+    rocket.rotation.x = - Math.PI / 16;
     scene.add(rocket);
 
     rocketActions = new THREE.AnimationMixer(model);
@@ -95,6 +101,18 @@ function loadModels() {
     sunActions = new THREE.AnimationMixer(model);
     sunActions.clipAction(gltf.animations[0]).play();
   });
+
+  var cubeTexture = new THREE.ImageUtils.loadTexture("./../../textures/start.png"); 
+
+  const buttonGeometry = new THREE.BoxGeometry(4.5, 1.5, 1);
+  const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
+  buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+  buttonMesh.position.set(-1, 11.6, 500);
+  scene.add(buttonMesh);
+
+  boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x00FFBD59 );
+  boundingBoxButton.update();
+  scene.add( boundingBoxButton ); 
 }
 
 function inializeObjects() {
@@ -113,8 +131,8 @@ function initializeWorld() {
   camera = new THREE.PerspectiveCamera(
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
-    perspectiveAttrs.far,
-    perspectiveAttrs.near
+    perspectiveAttrs.near,
+    perspectiveAttrs.far
   );
   camera.position.set(
     cameraPositionXStart,
@@ -164,6 +182,82 @@ function initializeWorld() {
   inializeObjects();
 }
 
+var change = [];
+var speed = [];
+var doneDrawText = false;
+function drawText()
+{
+  const fontLoader = new THREE.FontLoader();
+
+  for (let i = 0; i <= text.length; i++)
+  {
+    fontLoader.load("./../../assets/fonts/poppins-semibold.json", function (font) {
+      var textGeo = new THREE.TextGeometry(text.charAt(i), {
+        font: font,
+        size: 2,
+        height: 0.1,
+        bevelEnabled: false,
+      });
+  
+      var textMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        shininess: 100,
+      });
+      textMeshs[i] = new THREE.Mesh(textGeo, textMaterial);
+      var addition = 2;
+      if (i == 3 || i == 7 || i == 8 || i == 9)
+        addition -= 1.0
+        
+      if (i > 0)
+        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 13.6, 550);
+      else
+        textMeshs[i].position.set(-6.4, 13.6, 550);
+      textMeshs[i].rotation.set(0, -0.2, 0);
+      scene.add(textMeshs[i]);
+    });
+    
+    if (i % 2 == 0)
+    {
+      change[i] = -0.05;
+      speed[i] = -1/500;
+    }
+    else
+    {
+      change[i] = 0.05;
+      speed[i] = 1/500;
+    }
+  }
+}
+
+function updateText()
+{
+  if (doneDrawText == false)
+  {
+    if (textMeshs.length >= text.length)
+    {
+      for (let i = 0; i < textMeshs.length; i++)
+      {
+        textMeshs[i].position.z = 500;
+      }
+      doneDrawText = true;
+    }
+  }
+  if (textMeshs.length >= text.length)
+  {
+    for (let i = 0; i < textMeshs.length; i++)
+    {
+      if (Math.abs(change[i]) >= 0.25)
+      {
+        change[i] = 0;
+        speed[i] = -speed[i];
+      }
+      
+      textMeshs[i].position.y += speed[i];
+      change[i] += speed[i];
+    }
+  }
+}
+
 function animateObjects() {
   for (var i = 0; i < stars.length; i++) {
     var star = stars[i];
@@ -174,11 +268,32 @@ function animateObjects() {
       star.position.z -= 2000;
     }
   }
-
-  mixers.forEach((mixer) => {
-    mixer.update(clock.getDelta());
-  });
 }
+
+var childWindow = "";
+var newTabUrl = "./../main/index.html";
+var windowWidth = window.innerWidth;
+var windowHeight = window.innerHeight;
+var time = 0;
+
+function onMouseDown(event) {
+  var posRender = new THREE.Vector2();
+  posRender = renderer.getSize();
+  var x = ( event.clientX /  windowWidth) * 5 - 0.6;
+  var y = - ( event.clientY / windowHeight ) * 10 + 15;
+  var boxPos = boundingBoxButton.geometry.attributes.position.array;
+  if (
+      boxPos[0] >= x &&
+      boxPos[3] <= x &&
+      boxPos[1] >= y &&
+      boxPos[7] <= y 
+  ) {
+    childWindow = window.open(newTabUrl, "_self");
+  }
+  console.log(x, y);
+  console.log( boxPos[0], boxPos[3], boxPos[1], boxPos[7] );
+}
+document.addEventListener("mousedown", onMouseDown, false);
 
 function render() {
   animateObjects();
@@ -224,8 +339,18 @@ function render() {
         }
       }
     }
+    else
+    {
+      updateText();
+    }
 
-    if (rocketActions != undefined) rocketActions.update(clock.getDelta());
+    var clockDelta = clock.getDelta();
+    time += clockDelta;
+    if (rocketActions != undefined) rocketActions.update(clockDelta);
+    if (sunActions != undefined) sunActions.update(clockDelta);
+
+    // if (Date.now() > cameraInitialTimestamp + cameraIntroTime + 3000)
+    //   childWindow = window.open(newTabUrl, "_self");
 
     if (movingDestinyX != null) {
       if (rocket.position.x != movingDestinyX) {
@@ -244,4 +369,5 @@ function render() {
 }
 
 initializeWorld();
+drawText();
 render();
