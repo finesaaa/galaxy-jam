@@ -4,12 +4,13 @@ const perspectiveAttrs = {
   far: 5000,
   initailPosition: {
     x: 0,
-    y: 700,
-    z: 70,
+    y: 20,
+    z: 0,
   },
   followRocket: {
     enabled: true,
-    subtraction: 0.005,
+    subtraction: 0.0025,
+    additionalY: 0.5,
   },
 };
 
@@ -33,33 +34,34 @@ const starAttrs = {
     zMin: -2000,
     zMax: 2000,
     zGap: 20,
-  }
+  },
+  speed: 100,
 };
 
 const pathLineAttrs = {
   divisions: 70,
   color: 0xffffaa,
   pathPoints: [
-    [-8, 0, 12],
-    [-9, 0, 7],
-    [-9.5, 0, 3.4],
-    [-18, 0, -2],
-    [-19.5, 0, -3],
-    [-24, 0, -8],
-    [-21, 0, -13],
-    [-18, 0, -18],
+    [-8, 0.1, 12],
+    [-9, 0.2, 7],
+    [-9.5, 0.3, 3.4],
+    [-18, 0.3, -2],
+    [-19.5, 0.3, -3],
+    [-24, 0.2, -8],
+    [-21, 0.1, -13],
+    [-18, 0.02, -18],
     [-8, 0, -23],
     [-2, 0, -20],
-    [4, 0, -17],
-    [9, 0, -13],
-    [13, 0, -8],
-    [17, 0, -3],
-    [24, 0, 8],
-    [12, 0, 17],
+    [4, -0.02, -17],
+    [9, -0.05, -13],
+    [13, -0.1, -8],
+    [17, -0.15, -3],
+    [24, -0.2, 8],
+    [12, -0.1, 17],
     [4, 0, 23],
-    [-7, 0, 18],
+    [-7, 0.02, 18],
   ],
-  isDrawLines: false,
+  isDrawLines: true,
 };
 
 const rocketAttrs = {
@@ -70,10 +72,15 @@ const rocketAttrs = {
     y: 0,
     z: 0,
   },
-  pathNum: 5,
-  pathScale: 2.5,
-  pathScaleAddition: 0.01,
-  speed: 0.001,
+  path: {
+    num: 5,
+    scale: 1.5,
+    scaleAddition: 0.003,
+  },
+  movement: {
+    speed: 0,
+    delta: 0.2,
+  },
 };
 
 const planetBaseScale = 1;

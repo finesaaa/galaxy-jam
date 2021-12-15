@@ -5,6 +5,7 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/l
 var scene;
 var renderer;
 var clock;
+var loader;
 
 var camera;
 var cameraIndex = 0;
@@ -19,6 +20,11 @@ var rocketFraction = 0;
 var rocketDir = new THREE.Vector3(0, 0, -1);
 var rocketAxis = new THREE.Vector3();
 
+var rocketMovement = 0;
+var dRocketMovement = rocketAttrs.movement.delta;
+var isRocketMove = false;
+var rocketIndexBefore = 0;
+
 var planetsModel = {};
 var planetsPath = {};
 var planetsFraction = {};
@@ -30,12 +36,16 @@ var mixers = [];
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97) {
     // A atau a
-    if (rocketIndex - 1 >= 0) {
+    if (rocketIndex - 1 >= 0 && !isRocketMove) {
+      rocketIndexBefore = rocketIndex;
+      isRocketMove = true;
       rocketIndex -= 1;
     }
   } else if (event.keyCode == 68 || event.keyCode == 100) {
     // D atau d
-    if (rocketIndex + 1 < paths.length) {
+    if (rocketIndex + 1 < paths.length && !isRocketMove) {
+      rocketIndexBefore = rocketIndex;
+      isRocketMove = true;
       rocketIndex += 1;
     }
   } else if (event.keyCode == 87 || event.keyCode == 119) {
@@ -138,7 +148,6 @@ function addStar(zPosition, scale = starAttrs.scale) {
 }
 
 function loadModels() {
-  const loader = new GLTFLoader();
   loader.load(rocketAttrs.src, function (gltf) {
     const model = gltf.scene;
     model.scale.set(rocketAttrs.scale, rocketAttrs.scale, rocketAttrs.scale);
@@ -147,13 +156,19 @@ function loadModels() {
       rocketAttrs.initailPosition.y,
       rocketAttrs.initailPosition.z
     );
+
     model.traverse(function (child) {
       if (child.isMesh) {
         child.castShadow = true;
       }
     });
 
+    let mixer = new THREE.AnimationMixer(model);
+    mixer.clipAction(gltf.animations[0]).play();
+    mixers.push(mixer);
+
     rocket = model;
+
     scene.add(rocket);
   });
 
@@ -170,30 +185,32 @@ function loadModels() {
         }
       });
 
-      let modelPath = createPath(planetAttrs.pathScale);
+      let modelPath = createPath(planetAttrs.path.scale);
       let modelPosition = modelPath.getPoint(planetAttrs.pathFraction);
       model.position.set(modelPosition.x, modelPosition.y, modelPosition.z);
-      scene.add(model);
 
-      var mixer = new THREE.AnimationMixer(model);
+      let mixer = new THREE.AnimationMixer(model);
       mixer.clipAction(gltf.animations[0]).play();
       mixers.push(mixer);
 
       planetsModel[planetAttrs.name] = model;
       planetsPath[planetAttrs.name] = modelPath;
       planetsFraction[planetAttrs.name] = planetAttrs.pathFraction;
+
+      scene.add(model);
     });
   }
 }
 
 function inializeObjects() {
-  var middlePathIndex = Math.floor(rocketAttrs.pathNum / 2);
-  for (var i = 0; i < rocketAttrs.pathNum; i++) {
-    var additionalScale = (middlePathIndex - i) * rocketAttrs.pathScaleAddition;
-    addPath(rocketAttrs.pathScale + additionalScale);
+  var middlePathIndex = Math.floor(rocketAttrs.path.num / 2);
+  for (var i = 0; i < rocketAttrs.path.num; i++) {
+    var additionalScale = (middlePathIndex - i) * rocketAttrs.path.scaleAddition;
+    addPath(rocketAttrs.path.scale + additionalScale);
   }
 
   rocketIndex = Math.floor(paths.length / 2);
+  rocketIndexBefore = rocketIndex;
   cameraIndex = rocketIndex;
 
   for (
@@ -210,7 +227,7 @@ function initializeWorld() {
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
     perspectiveAttrs.near,
-    perspectiveAttrs.far,
+    perspectiveAttrs.far
   );
   camera.position.x = perspectiveAttrs.initailPosition.x;
   camera.position.y = perspectiveAttrs.initailPosition.y;
@@ -225,6 +242,8 @@ function initializeWorld() {
 
   clock = new THREE.Clock();
 
+  loader = new GLTFLoader();
+
   const light = new THREE.PointLight(lightAttrs.color, lightAttrs.intensity);
   light.position.set(
     lightAttrs.initailPosition.x,
@@ -238,9 +257,40 @@ function initializeWorld() {
   inializeObjects();
 }
 
+function interpolation(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function ease(t) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
 function updateRocket() {
-  const newPosition = paths[rocketIndex].getPoint(rocketFraction);
-  const tangent = paths[rocketIndex].getTangent(rocketFraction);
+  var middlePathIndex = Math.floor(rocketAttrs.path.num / 2);
+  var additionalFraction = (middlePathIndex - rocketIndex) * rocketAttrs.path.scaleAddition;
+
+  const nextPosition = paths[rocketIndex].getPoint(rocketFraction + additionalFraction);
+  const tangent = paths[rocketIndex].getTangent(rocketFraction + additionalFraction);
+  
+  var newX = nextPosition.x;
+  var newY = nextPosition.y;
+  var newZ = nextPosition.z;
+  
+  if (isRocketMove) {
+    rocketMovement += dRocketMovement;
+    if (rocketMovement >= 1) {
+      rocketMovement = 0;
+      isRocketMove = false;
+      rocketIndexBefore = rocketIndex;
+    }
+
+    const currentPosition = paths[rocketIndexBefore].getPoint(rocketFraction + additionalFraction);
+    newX = interpolation(currentPosition.x, nextPosition.x, ease(t));
+    newY = interpolation(currentPosition.y, nextPosition.y, ease(t));
+    newZ = interpolation(currentPosition.z, nextPosition.z, ease(t));
+  }
+  const newPosition = new THREE.Vector3(newX, newY, newZ);
+
   rocket.position.copy(newPosition);
 
   rocketAxis.crossVectors(rocketDir, tangent).normalize();
@@ -253,14 +303,20 @@ function updateRocket() {
     cameraFranction += 1;
   }
 
-  camera.lookAt(newPosition);
+  camera.lookAt(
+    new THREE.Vector3(
+      newPosition.x,
+      newPosition.y + perspectiveAttrs.followRocket.additionalY * 0.5,
+      newPosition.z
+    )
+  );
   if (perspectiveAttrs.followRocket.enabled) {
     const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
     camera.position.copy(newCameraPosition);
-    camera.position.y += 1;
+    camera.position.y += perspectiveAttrs.followRocket.additionalY;
   }
 
-  rocketFraction += rocketAttrs.speed;
+  rocketFraction += rocketAttrs.movement.speed;
   if (rocketFraction > 1) {
     rocketFraction = 0;
   }
@@ -276,19 +332,20 @@ function updateRocket() {
   }
 }
 
-function animateObjects() {
+function updateObjects() {
   for (var i = 0; i < stars.length; i++) {
     var star = stars[i];
 
-    star.position.z += i / 100;
+    star.position.z += i / starAttrs.speed;
 
-    if (star.position.z > 1000) {
-      star.position.z -= 2000;
+    if (star.position.z > starAttrs.position.zMax) {
+      star.position.z -= starAttrs.position.zMax * 2;
     }
   }
 
-  mixers.forEach((mixer) => {
-    mixer.update(clock.getDelta());
+  var deltaSec = clock.getDelta();
+  mixers.forEach(function (mixer) {
+    mixer.update(deltaSec);
   });
 
   if (rocket !== undefined) {
@@ -297,7 +354,7 @@ function animateObjects() {
 }
 
 function render() {
-  animateObjects();
+  updateObjects();
 
   renderer.render(scene, camera);
 
