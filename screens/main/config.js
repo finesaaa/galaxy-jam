@@ -63,7 +63,7 @@ const pathLineAttrs = {
 };
 
 const rocketAttrs = {
-  src: "./../../models/rocket/scene.gltf",
+  src: "./../../assets/models/rocket/scene.gltf",
   scale: 0.001,
   initailPosition: {
     x: 0,
@@ -80,7 +80,7 @@ const planetBaseScale = 1;
 const planetsAttrs = {
   mercury: {
     name: "mercury",
-    src: "./../../models/mercury/scene.gltf",
+    src: "./../../assets/models/mercury/scene.gltf",
     scale: planetBaseScale * (1 / 277),
     pathScale: 2.5,
     pathFraction: 0.1,
@@ -88,7 +88,7 @@ const planetsAttrs = {
   },
   venus: {
     name: "venus",
-    src: "./../../models/venus/scene.gltf",
+    src: "./../../assets/models/venus/scene.gltf",
     scale: planetBaseScale * (1 / 113),
     pathScale: 3,
     pathFraction: 0.2,
@@ -96,7 +96,7 @@ const planetsAttrs = {
   },
   earth: {
     name: "earth",
-    src: "./../../models/earth/scene.gltf",
+    src: "./../../assets/models/earth/scene.gltf",
     scale: planetBaseScale * (1 / 108),
     pathScale: 3,
     pathFraction: 0.3,
@@ -104,7 +104,7 @@ const planetsAttrs = {
   },
   mars: {
     name: "mars",
-    src: "./../../models/mars/scene.gltf",
+    src: "./../../assets/models/mars/scene.gltf",
     scale: planetBaseScale * (1 / 208),
     pathScale: 3,
     pathFraction: 0.5,
@@ -112,7 +112,7 @@ const planetsAttrs = {
   },
   jupiter: {
     name: "jupiter",
-    src: "./../../models/jupiter/scene.gltf",
+    src: "./../../assets/models/jupiter/scene.gltf",
     scale: planetBaseScale * (1 / 9.7),
     pathScale: 5,
     pathFraction: 0.6,
@@ -120,7 +120,7 @@ const planetsAttrs = {
   },
   saturn: {
     name: "saturn",
-    src: "./../../models/saturn/scene.gltf",
+    src: "./../../assets/models/saturn/scene.gltf",
     scale: planetBaseScale * (1 / 11.4),
     pathScale: 4,
     pathFraction: 0.8,
@@ -128,7 +128,7 @@ const planetsAttrs = {
   },
   uranus: {
     name: "uranus",
-    src: "./../../models/uranus/scene.gltf",
+    src: "./../../assets/models/uranus/scene.gltf",
     scale: planetBaseScale * (1 / 26.8),
     pathScale: 4,
     pathFraction: 0.9,
@@ -136,7 +136,7 @@ const planetsAttrs = {
   },
   neptune: {
     name: "neptune",
-    src: "./../../models/neptune/scene.gltf",
+    src: "./../../assets/models/neptune/scene.gltf",
     scale: planetBaseScale * (1 / 27.7),
     pathScale: 3,
     pathFraction: 0,
