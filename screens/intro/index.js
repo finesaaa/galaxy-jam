@@ -2,87 +2,50 @@ import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 
-var scene;
-var renderer;
-var clock;
+var PLANE_WIDTH = 20;
+var PLANE_LENGTH = 1000;
+var PADDING = (PLANE_WIDTH / 5) * 2;
 
 var camera;
-var cameraIndex = 0;
-
-var paths = [];
+var directionalLight;
+var globalRenderID;
+var hemisphereLight;
+var renderer;
+var scene;
 
 var rocket;
-var rocketIndex = 0;
-var fraction = 0;
+var rocketActions;
 
-var stars = [];
+var sun;
+var sunActions;
 
 var mixers = [];
 
-const up = new THREE.Vector3(0, 0, -1);
-const axis = new THREE.Vector3();
+var movingLeft = false;
+var movingRight = false;
+var movingDestinyX = null;
 
-function createPath(scale) {
-  var path = new THREE.CurvePath();
-  var pathPoints = pathLineAttrs.pathPoints;
+var game_running = true;
 
-  for (var i = 0; i < pathPoints.length; i += 3) {
-    let bezierPoints = [];
-    for (var j = i; j < i + 3; j++) {
-      bezierPoints.push(
-        new THREE.Vector3(
-          pathPoints[j][0] * scale,
-          pathPoints[j][1] * scale,
-          pathPoints[j][2] * scale
-        )
-      );
-    }
+var clock = new THREE.Clock();
 
-    if (i + 3 == pathPoints.length) {
-      bezierPoints.push(
-        new THREE.Vector3(
-          pathPoints[0][0] * scale,
-          pathPoints[0][1] * scale,
-          pathPoints[0][2] * scale
-        )
-      );
-    } else {
-      bezierPoints.push(
-        new THREE.Vector3(
-          pathPoints[j][0] * scale,
-          pathPoints[j][1] * scale,
-          pathPoints[j][2] * scale
-        )
-      );
-    }
+var cameraDegreesStart = -90;
+var cameraDegreesEnd = 0;
+var cameraPositionXStart = -45;
+var cameraPositionXEnd = 0;
+var cameraPositionZStart = 50;
+var cameraPositionZEnd = 10;
+var cameraIntroTime = 4000;
+var cameraIntroDone = false;
+var cameraInitialTimestamp = null;
 
-    let bezier = new THREE.CubicBezierCurve3(
-      bezierPoints[0].multiplyScalar(scale),
-      bezierPoints[1].multiplyScalar(scale),
-      bezierPoints[2].multiplyScalar(scale),
-      bezierPoints[3].multiplyScalar(scale)
-    );
-    path.add(bezier);
-  }
+var stars = [];
 
-  return path;
-}
+const text = "galaxy...";
+var textMeshs = [];
 
-function addPath(scale, isDrawLine = pathLineAttrs.isDrawLines) {
-  var path = createPath(scale);
-
-  if (isDrawLine) {
-    const points = path.getPoints(pathLineAttrs.divisions);
-    const line = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints(points),
-      new THREE.LineBasicMaterial({ color: pathLineAttrs.color })
-    );
-
-    scene.add(line);
-  }
-
-  paths.push(path);
-}
+var buttonMesh;
+var boundingBoxButton = null;
 
 function addStar(zPosition, scale = starAttrs.scale) {
   var geometry = new THREE.SphereGeometry(
@@ -111,25 +74,49 @@ function loadModels() {
     const model = gltf.scene;
     model.scale.set(rocketAttrs.scale, rocketAttrs.scale, rocketAttrs.scale);
     model.position.set(
-      rocketAttrs.initailPosition.x,
-      rocketAttrs.initailPosition.y,
-      rocketAttrs.initailPosition.z
+      rocketAttrs.initialPosition.x,
+      rocketAttrs.initialPosition.y,
+      rocketAttrs.initialPosition.z
     );
     rocket = model;
+    rocket.rotation.y = - Math.PI / 5;
+    rocket.rotation.x = - Math.PI / 16;
     scene.add(rocket);
+
+    rocketActions = new THREE.AnimationMixer(model);
+    rocketActions.clipAction(gltf.animations[0]).play();
   });
+
+  loader.load(sunAttrs.src, function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(sunAttrs.scale, sunAttrs.scale, sunAttrs.scale);
+    model.position.set(
+      sunAttrs.initialPosition.x,
+      sunAttrs.initialPosition.y,
+      sunAttrs.initialPosition.z
+    );
+    sun = model;
+    scene.add(sun);
+
+    sunActions = new THREE.AnimationMixer(model);
+    sunActions.clipAction(gltf.animations[0]).play();
+  });
+
+  var cubeTexture = new THREE.ImageUtils.loadTexture("./../../textures/start.png"); 
+
+  const buttonGeometry = new THREE.BoxGeometry(4.5, 1.5, 1);
+  const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
+  buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+  buttonMesh.position.set(-1, 11.6, 600);
+  
+  boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x00FFBD59 );
+  boundingBoxButton.update();
+
+  scene.add(buttonMesh);
+  scene.add( boundingBoxButton ); 
 }
 
 function inializeObjects() {
-  var middlePathIndex = Math.floor(rocketAttrs.pathNum / 2);
-  for (var i = 0; i < rocketAttrs.pathNum; i++) {
-    var additionalScale = (middlePathIndex - i) * rocketAttrs.pathScaleAddition;
-    addPath(rocketAttrs.pathScale + additionalScale);
-  }
-
-  rocketIndex = Math.floor(paths.length / 2);
-  cameraIndex = rocketIndex;
-
   for (
     var z = starAttrs.position.zMin;
     z < starAttrs.position.zMax;
@@ -140,35 +127,141 @@ function inializeObjects() {
 }
 
 function initializeWorld() {
+  scene = new THREE.Scene();
+
   camera = new THREE.PerspectiveCamera(
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
-    perspectiveAttrs.far,
-    perspectiveAttrs.near
+    perspectiveAttrs.near,
+    perspectiveAttrs.far
   );
-  camera.position.z = perspectiveAttrs.initailPosition.z;
-  camera.position.y = perspectiveAttrs.initailPosition.y;
+  camera.position.set(
+    cameraPositionXStart,
+    10.6,
+    PLANE_LENGTH / 2 + PLANE_LENGTH / 25 - cameraPositionZStart
+  );
+  camera.rotation.y = (cameraDegreesStart * Math.PI) / 180;
 
-  scene = new THREE.Scene();
+  scene.add(camera);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   document.body.appendChild(renderer.domElement);
 
-  clock = new THREE.Clock();
+  var spotLight;
+  var target;
+  var targetGeometry;
+  var targetMaterial;
+  for (var i = 0; i < 5; i += 1) {
+    targetGeometry = new THREE.BoxGeometry(1, 1, 1);
+    targetMaterial = new THREE.MeshNormalMaterial();
+    target = new THREE.Mesh(targetGeometry, targetMaterial);
+    target.position.set(0, 2, (i * PLANE_LENGTH) / 5 - PLANE_LENGTH / 2.5);
+    target.visible = false;
+    scene.add(target);
 
-  const light = new THREE.PointLight(lightAttrs.color, lightAttrs.intensity);
-  light.position.set(
-    lightAttrs.initailPosition.x,
-    lightAttrs.initailPosition.y,
-    lightAttrs.initailPosition.z
-  );
-  scene.add(light);
+    spotLight = new THREE.SpotLight(0xffffff, 0.1);
+    spotLight.position.set(
+      150,
+      (i * PLANE_LENGTH) / 5 - PLANE_LENGTH / 2.5,
+      -350
+    );
+    spotLight.castShadow = true;
+    spotLight.target = target;
+    spotLight.shadow.mapSize.width = 1024;
+    spotLight.shadow.mapSize.height = 1024;
+  }
+  directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(0, 99, 0);
+  hemisphereLight = new THREE.HemisphereLight(0xfffbdb, 0x37474f, 1);
+  hemisphereLight.position.y = 500;
+  scene.add(directionalLight, hemisphereLight);
 
   loadModels();
 
   inializeObjects();
+}
+
+var change = [];
+var speed = [];
+var doneDrawText = false;
+function drawText()
+{
+  const fontLoader = new THREE.FontLoader();
+
+  for (let i = 0; i <= text.length; i++)
+  {
+    fontLoader.load("./../../assets/fonts/poppins-semibold.json", function (font) {
+      var textGeo = new THREE.TextGeometry(text.charAt(i), {
+        font: font,
+        size: 2,
+        height: 0.1,
+        bevelEnabled: false,
+      });
+  
+      var textMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        shininess: 100,
+      });
+      textMeshs[i] = new THREE.Mesh(textGeo, textMaterial);
+      var addition = 2;
+      if (i == 3 || i == 7 || i == 8 || i == 9)
+        addition -= 1.0
+        
+      if (i > 0)
+        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 13.6, 550);
+      else
+        textMeshs[i].position.set(-6.4, 13.6, 550);
+      textMeshs[i].rotation.set(0, -0.2, 0);
+      scene.add(textMeshs[i]);
+    });
+    
+    if (i % 2 == 0)
+    {
+      change[i] = -0.05;
+      speed[i] = -1/500;
+    }
+    else
+    {
+      change[i] = 0.05;
+      speed[i] = 1/500;
+    }
+  }
+}
+
+function updateText()
+{
+  if (doneDrawText == false)
+  {
+    if (textMeshs.length >= text.length)
+    {
+      for (let i = 0; i < textMeshs.length; i++)
+      {
+        textMeshs[i].position.z = 500;
+      }
+      
+      doneDrawText = true;
+    }
+    if (buttonMesh != undefined)
+    {
+      buttonMesh.position.z = 500;
+    }
+  }
+  if (textMeshs.length >= text.length)
+  {
+    for (let i = 0; i < textMeshs.length; i++)
+    {
+      if (Math.abs(change[i]) >= 0.25)
+      {
+        change[i] = 0;
+        speed[i] = -speed[i];
+      }
+      
+      textMeshs[i].position.y += speed[i];
+      change[i] += speed[i];
+    }
+  }
 }
 
 function animateObjects() {
@@ -181,56 +274,106 @@ function animateObjects() {
       star.position.z -= 2000;
     }
   }
-
-  mixers.forEach((mixer) => {
-    mixer.update(clock.getDelta());
-  });
-
-  if (rocket !== undefined) {
-    // updateRocket();
-  }
 }
-
 
 var childWindow = "";
-var newTabUrl = "../main/index.html";
-
-var introTime = parseFloat(sessionStorage.getItem("introTime"));
+var newTabUrl = "./../main/index.html";
+var windowWidth = window.innerWidth;
+var windowHeight = window.innerHeight;
 var time = 0;
 
-function checkRotation(){
-  if (clock !== undefined)
-  time += clock.getDelta();
-  
-  var rotSpeed = .02;
-  var x = camera.position.x,
-  y = camera.position.y,
-  z = camera.position.z;
-  
-  // console.log(introTime, time);
-  if (introTime > 0)
-  {
-    if (time < introTime + 1.6)
-    {
-      camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
-      camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
-    }
-    else
-    {
-      childWindow = window.open(newTabUrl, "_self");
-    }
+function onMouseDown(event) {
+  var posRender = new THREE.Vector2();
+  posRender = renderer.getSize();
+  var x = ( event.clientX /  windowWidth) * 4.2 - 1;
+  var y = - ( event.clientY / windowHeight ) * 10 + 16;
+  var boxPos = boundingBoxButton.geometry.attributes.position.array;
+  if (
+      boxPos[0] >= x &&
+      boxPos[3] <= x &&
+      boxPos[1] >= y &&
+      boxPos[7] <= y 
+  ) {
+    childWindow = window.open(newTabUrl, "_self");
   }
-  camera.lookAt(scene.position);
+  console.log(x, y);
+  console.log( boxPos[0], boxPos[3], boxPos[1], boxPos[7] );
 }
+document.addEventListener("mousedown", onMouseDown, false);
 
 function render() {
   animateObjects();
-  checkRotation();
 
   renderer.render(scene, camera);
 
-  requestAnimationFrame(render);
+  setTimeout(function () {
+    globalRenderID = requestAnimationFrame(render);
+  }, 1000 / 90);
+
+  if (game_running == true) {
+    if (cameraIntroDone == false) {
+      if (cameraInitialTimestamp == null) {
+        cameraInitialTimestamp = Date.now();
+      }
+
+      if (Date.now() > cameraInitialTimestamp + cameraIntroTime) {
+        if (cameraPositionXStart != cameraPositionXEnd) {
+          cameraPositionXStart = cameraPositionXStart + 1;
+
+          camera.position.x = camera.position.x + 1;
+        }
+
+        if (cameraDegreesStart != cameraDegreesEnd) {
+          cameraDegreesStart = cameraDegreesStart + 2;
+
+          camera.rotation.y = (cameraDegreesStart * Math.PI) / 180;
+        }
+
+        if (cameraPositionZStart != cameraPositionZEnd) {
+          cameraPositionZStart = cameraPositionZStart - 1;
+
+          camera.position.z =
+            PLANE_LENGTH / 2 + PLANE_LENGTH / 25 - cameraPositionZStart;
+        }
+
+        if (
+          cameraDegreesStart == cameraDegreesEnd &&
+          cameraPositionXStart == cameraPositionXEnd &&
+          cameraPositionZStart == cameraPositionZEnd
+        ) {
+          cameraIntroDone = true;
+        }
+      }
+    }
+    else
+    {
+      updateText();
+    }
+
+    var clockDelta = clock.getDelta();
+    time += clockDelta;
+    if (rocketActions != undefined) rocketActions.update(clockDelta);
+    if (sunActions != undefined) sunActions.update(clockDelta);
+
+    if (Date.now() > cameraInitialTimestamp + cameraIntroTime + 4000)
+      childWindow = window.open(newTabUrl, "_self");
+
+    if (movingDestinyX != null) {
+      if (rocket.position.x != movingDestinyX) {
+        if (movingLeft == true) {
+          rocket.position.x = rocket.position.x - 0.5;
+        } else if (movingRight == true) {
+          rocket.position.x = rocket.position.x + 0.5;
+        }
+      } else {
+        movingDestinyX = null;
+        movingLeft = false;
+        movingRight = false;
+      }
+    }
+  }
 }
 
 initializeWorld();
+drawText();
 render();
