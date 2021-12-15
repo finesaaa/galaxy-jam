@@ -13,14 +13,17 @@ var paths = [];
 
 var rocket;
 var rocketIndex = 0;
-var fraction = 0;
+var rocketFraction = 0;
+var rocketDir = new THREE.Vector3(0, 0, 1);
+var rocketAxis = new THREE.Vector3();
+
+var planetsModel = {};
+var planetsPath = {};
+var planetsFraction = {};
 
 var stars = [];
 
 var mixers = [];
-
-const up = new THREE.Vector3(0, 0, -1);
-const axis = new THREE.Vector3();
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97) {
@@ -138,37 +141,33 @@ function loadModels() {
     scene.add(rocket);
   });
 
-  loader.load("./../../models/mercury/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(0, 0, 0);
-    scene.add(model);
-  });
+  for (var key in planetsAttrs) {
+    let planetAttrs = planetsAttrs[key];
 
-  loader.load("./../../models/venus/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -90);
-    scene.add(model);
-  });
+    loader.load(planetAttrs.src, function (gltf) {
+      const model = gltf.scene;
+      model.scale.set(planetAttrs.scale, planetAttrs.scale, planetAttrs.scale);
 
-  loader.load("./../../models/earth/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(2, 0, -100);
-    scene.add(model);
+      let modelPath = createPath(planetAttrs.pathScale);
+      let modelPosition = modelPath.getPoint(planetAttrs.pathFraction);
+      model.position.set(modelPosition.x, modelPosition.y, modelPosition.z);
+      scene.add(model);
 
-    var mixer = new THREE.AnimationMixer(model);
-    mixer.clipAction(gltf.animations[0]).play();
-    mixers.push(mixer);
-  });
+      var mixer = new THREE.AnimationMixer(model);
+      mixer.clipAction(gltf.animations[0]).play();
+      mixers.push(mixer);
 
-  loader.load("./../../models/mars/scene.gltf", function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(0.1, 0.1, 0.1);
-    model.position.set(-2, 0, -1000);
-    scene.add(model);
-  });
+      model.traverse(function(child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+        }
+      });
+
+      planetsModel[planetAttrs.name] = model;
+      planetsPath[planetAttrs.name] = modelPath;
+      planetsFraction[planetAttrs.name] = planetAttrs.pathFraction;
+    });
+  }
 }
 
 function inializeObjects() {
@@ -223,28 +222,38 @@ function initializeWorld() {
 }
 
 function updateRocket() {
-  const newPosition = paths[rocketIndex].getPoint(fraction);
-  const tangent = paths[rocketIndex].getTangent(fraction);
+  const newPosition = paths[rocketIndex].getPoint(rocketFraction);
+  const tangent = paths[rocketIndex].getTangent(rocketFraction);
   rocket.position.copy(newPosition);
+  console.log(newPosition);
 
-  axis.crossVectors(up, tangent).normalize();
-  const radians = Math.acos(up.dot(tangent));
-  rocket.quaternion.setFromAxisAngle(axis, radians);
+  rocketAxis.crossVectors(rocketDir, tangent).normalize();
+  const radians = Math.acos(rocketDir.dot(tangent));
+  rocket.quaternion.setFromAxisAngle(rocketAxis, radians);
 
-  var cameraFranction = fraction - 0.015;
+  var cameraFranction = rocketFraction - 0.005;
   if (cameraFranction < 0) {
     cameraFranction += 1;
   }
 
   camera.lookAt(newPosition);
   const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
-  const cameraTangent = paths[cameraIndex].getTangent(cameraFranction);
   camera.position.copy(newCameraPosition);
   camera.position.y += 1;
 
-  fraction += 0.0004;
-  if (fraction > 1) {
-    fraction = 0;
+  rocketFraction += 0.0002;
+  if (rocketFraction > 1) {
+    rocketFraction = 0;
+  }
+
+  for (var key in planetsModel) {
+    const newPlanetPosition = planetsPath[key].getPoint(planetsFraction[key]);
+    planetsModel[key].position.copy(newPlanetPosition);
+
+    planetsFraction[key] += 0.000002;
+    if (planetsFraction[key] > 1) {
+      planetsFraction[key] = 0;
+    }
   }
 }
 
