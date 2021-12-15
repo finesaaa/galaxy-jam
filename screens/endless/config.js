@@ -33,8 +33,8 @@ const starAttrs = {
 };
 
 const rocketAttrs = {
-  src: "./../../models/rocket-astro/scene.gltf",
-  scale: 0.05,
+  src: "./../../assets/models/rocket-astro/scene.gltf",
+  scale: 0.036,
   initialPosition: {
     x: 0,
     y: 1,
