@@ -7,6 +7,10 @@ const perspectiveAttrs = {
     y: 700,
     z: 70,
   },
+  followRocket: {
+    enabled: true,
+    subtraction: 0.005,
+  },
 };
 
 const lightAttrs = {
@@ -55,7 +59,7 @@ const pathLineAttrs = {
     [4, 0, 23],
     [-7, 0, 18],
   ],
-  isDrawLines: true,
+  isDrawLines: false,
 };
 
 const rocketAttrs = {
@@ -69,6 +73,7 @@ const rocketAttrs = {
   pathNum: 5,
   pathScale: 2.5,
   pathScaleAddition: 0.01,
+  speed: 0.001,
 };
 
 const planetBaseScale = 1;
@@ -78,55 +83,63 @@ const planetsAttrs = {
     src: "./../../models/mercury/scene.gltf",
     scale: planetBaseScale * (1 / 277),
     pathScale: 2.5,
-    pathFraction: 0.1
+    pathFraction: 0.1,
+    speed: 0.0002,
   },
   venus: {
     name: "venus",
     src: "./../../models/venus/scene.gltf",
     scale: planetBaseScale * (1 / 113),
     pathScale: 3,
-    pathFraction: 0.2
+    pathFraction: 0.2,
+    speed: 0.0002,
   },
   earth: {
     name: "earth",
     src: "./../../models/earth/scene.gltf",
     scale: planetBaseScale * (1 / 108),
     pathScale: 3,
-    pathFraction: 0.3
+    pathFraction: 0.3,
+    speed: 0.0002,
   },
   mars: {
     name: "mars",
     src: "./../../models/mars/scene.gltf",
     scale: planetBaseScale * (1 / 208),
     pathScale: 3,
-    pathFraction: 0.5
+    pathFraction: 0.5,
+    speed: 0.0002,
   },
   jupiter: {
     name: "jupiter",
     src: "./../../models/jupiter/scene.gltf",
     scale: planetBaseScale * (1 / 9.7),
     pathScale: 5,
-    pathFraction: 0.6
+    pathFraction: 0.6,
+    speed: 0.0002,
   },
   saturn: {
     name: "saturn",
     src: "./../../models/saturn/scene.gltf",
     scale: planetBaseScale * (1 / 11.4),
     pathScale: 4,
-    pathFraction: 0.8
+    pathFraction: 0.8,
+    speed: 0.0002,
   },
   uranus: {
     name: "uranus",
     src: "./../../models/uranus/scene.gltf",
     scale: planetBaseScale * (1 / 26.8),
     pathScale: 4,
-    pathFraction: 0.9
+    pathFraction: 0.9,
+    speed: 0.0002,
   },
   neptune: {
     name: "neptune",
     src: "./../../models/neptune/scene.gltf",
     scale: planetBaseScale * (1 / 27.7),
     pathScale: 3,
-    pathFraction: 0
+    pathFraction: 0,
+    speed: 0.0002,
   },
 };

@@ -8,6 +8,8 @@ var clock;
 
 var camera;
 var cameraIndex = 0;
+var cameraDir = new THREE.Vector3(0, 0, -1);
+var cameraAxis = new THREE.Vector3();
 
 var paths = [];
 
@@ -43,6 +45,14 @@ function onKeydown(event) {
   }
 }
 document.addEventListener("keydown", onKeydown, false);
+
+function onResize(event) {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", onResize, false);
 
 function createPath(scale) {
   var path = new THREE.CurvePath();
@@ -137,6 +147,12 @@ function loadModels() {
       rocketAttrs.initailPosition.y,
       rocketAttrs.initailPosition.z
     );
+    model.traverse(function (child) {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+
     rocket = model;
     scene.add(rocket);
   });
@@ -148,6 +164,12 @@ function loadModels() {
       const model = gltf.scene;
       model.scale.set(planetAttrs.scale, planetAttrs.scale, planetAttrs.scale);
 
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+        }
+      });
+
       let modelPath = createPath(planetAttrs.pathScale);
       let modelPosition = modelPath.getPoint(planetAttrs.pathFraction);
       model.position.set(modelPosition.x, modelPosition.y, modelPosition.z);
@@ -156,12 +178,6 @@ function loadModels() {
       var mixer = new THREE.AnimationMixer(model);
       mixer.clipAction(gltf.animations[0]).play();
       mixers.push(mixer);
-
-      model.traverse(function(child) {
-        if (child.isMesh) {
-          child.castShadow = true;
-        }
-      });
 
       planetsModel[planetAttrs.name] = model;
       planetsPath[planetAttrs.name] = modelPath;
@@ -196,8 +212,9 @@ function initializeWorld() {
     perspectiveAttrs.far,
     perspectiveAttrs.near
   );
-  camera.position.z = perspectiveAttrs.initailPosition.z;
+  camera.position.x = perspectiveAttrs.initailPosition.x;
   camera.position.y = perspectiveAttrs.initailPosition.y;
+  camera.position.z = perspectiveAttrs.initailPosition.z;
 
   scene = new THREE.Scene();
 
@@ -225,23 +242,25 @@ function updateRocket() {
   const newPosition = paths[rocketIndex].getPoint(rocketFraction);
   const tangent = paths[rocketIndex].getTangent(rocketFraction);
   rocket.position.copy(newPosition);
-  console.log(newPosition);
 
   rocketAxis.crossVectors(rocketDir, tangent).normalize();
   const radians = Math.acos(rocketDir.dot(tangent));
   rocket.quaternion.setFromAxisAngle(rocketAxis, radians);
 
-  var cameraFranction = rocketFraction - 0.005;
+  var cameraFranction =
+    rocketFraction - perspectiveAttrs.followRocket.subtraction;
   if (cameraFranction < 0) {
     cameraFranction += 1;
   }
 
   camera.lookAt(newPosition);
-  const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
-  camera.position.copy(newCameraPosition);
-  camera.position.y += 1;
+  if (perspectiveAttrs.followRocket.enabled) {
+    const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
+    camera.position.copy(newCameraPosition);
+    camera.position.y -= 4;
+  }
 
-  rocketFraction += 0.0002;
+  rocketFraction += rocketAttrs.speed;
   if (rocketFraction > 1) {
     rocketFraction = 0;
   }
@@ -250,7 +269,7 @@ function updateRocket() {
     const newPlanetPosition = planetsPath[key].getPoint(planetsFraction[key]);
     planetsModel[key].position.copy(newPlanetPosition);
 
-    planetsFraction[key] += 0.000002;
+    planetsFraction[key] += planetsAttrs[key].speed;
     if (planetsFraction[key] > 1) {
       planetsFraction[key] = 0;
     }
