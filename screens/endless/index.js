@@ -107,11 +107,12 @@ function loadModels() {
   const buttonGeometry = new THREE.BoxGeometry(4.5, 1.5, 1);
   const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
   buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
-  buttonMesh.position.set(-1, 11.6, 500);
-  scene.add(buttonMesh);
-
+  buttonMesh.position.set(-1, 11.6, 600);
+  
   boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x00FFBD59 );
   boundingBoxButton.update();
+
+  scene.add(buttonMesh);
   scene.add( boundingBoxButton ); 
 }
 
@@ -239,7 +240,12 @@ function updateText()
       {
         textMeshs[i].position.z = 500;
       }
+      
       doneDrawText = true;
+    }
+    if (buttonMesh != undefined)
+    {
+      buttonMesh.position.z = 500;
     }
   }
   if (textMeshs.length >= text.length)
@@ -279,8 +285,8 @@ var time = 0;
 function onMouseDown(event) {
   var posRender = new THREE.Vector2();
   posRender = renderer.getSize();
-  var x = ( event.clientX /  windowWidth) * 5 - 0.6;
-  var y = - ( event.clientY / windowHeight ) * 10 + 15;
+  var x = ( event.clientX /  windowWidth) * 4.2 - 1;
+  var y = - ( event.clientY / windowHeight ) * 10 + 16;
   var boxPos = boundingBoxButton.geometry.attributes.position.array;
   if (
       boxPos[0] >= x &&
@@ -349,8 +355,8 @@ function render() {
     if (rocketActions != undefined) rocketActions.update(clockDelta);
     if (sunActions != undefined) sunActions.update(clockDelta);
 
-    // if (Date.now() > cameraInitialTimestamp + cameraIntroTime + 3000)
-    //   childWindow = window.open(newTabUrl, "_self");
+    if (Date.now() > cameraInitialTimestamp + cameraIntroTime + 4000)
+      childWindow = window.open(newTabUrl, "_self");
 
     if (movingDestinyX != null) {
       if (rocket.position.x != movingDestinyX) {
