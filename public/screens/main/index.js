@@ -9,8 +9,6 @@ var loader;
 
 var camera;
 var cameraIndex = 0;
-var cameraDir = new THREE.Vector3(0, 0, -1);
-var cameraAxis = new THREE.Vector3();
 
 var paths = [];
 
