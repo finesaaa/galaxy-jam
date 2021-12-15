@@ -1,7 +1,7 @@
 const perspectiveAttrs = {
   fov: 45,
-  near: 0.1,
-  far: 500,
+  near: 1,
+  far: 3000,
   initialPosition: {
     x: 0,
     y: 0,
@@ -13,9 +13,9 @@ const lightAttrs = {
   color: 0xffffff,
   intensity: 2.4,
   initialPosition: {
-    x: 2,
-    y: 2,
-    z: 5,
+    x: 150,
+    y: 0,
+    z: -350,
   },
 };
 
@@ -33,16 +33,23 @@ const starAttrs = {
 };
 
 const rocketAttrs = {
-  src: "./../../models/rocket-astro/scene.gltf",
-  scale: 0.0009,
+  src: "./../../assets/models/rocket-astro/scene.gltf",
+  scale: 0.036,
   initialPosition: {
     x: 0,
-    y: -0.2,
-    z: 0,
+    y: 1,
+    z: 490,
   },
-  pathNum: 5,
-  pathScale: 2.5,
-  pathScaleAddition: 0.01,
+};
+
+const sunAttrs = {
+  src: "./../../assets/models/sun/scene.gltf",
+  scale: 2.2,
+  initialPosition: {
+    x: 0,
+    y: 10.96,
+    z: 520,
+  },
 };
 
 const planetsAttrs = {
@@ -51,7 +58,7 @@ const planetsAttrs = {
     scale: 0.001,
     initialPosition: {
       x: 0,
-      y: 0,
+      y: 1,
       z: 0,
     },
   },
