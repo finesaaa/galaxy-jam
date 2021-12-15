@@ -87,7 +87,7 @@ function init() {
   buttonMesh.rotation.x = - Math.PI / 30;
   scene.add(buttonMesh);
 
-  const boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x000000 );
+  boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x000000 );
   boundingBoxButton.update();
   scene.add( boundingBoxButton ); 
   
@@ -189,19 +189,21 @@ var childWindow = "";
 var newTabUrl = "index.html";
 
 function onMouseDown(event) {
-  var x = event.clientX;
-  var y = event.clientY;
-  // if (
-  //     boundingBoxButton.min.z <= x &&
-  //     boundingBoxButton.max.z >= x &&
-  //     boundingBoxButton.max.y <= y &&
-  //     boundingBoxButton.min.y >= y &&
-  //     boundingBoxButton != null
-  // ) {
-  //   console.log("yey");
-  //   childWindow = window.open(newTabUrl);
-  // }
-  // console.log(boundingBoxButton.min.x);
+  var posRender = new THREE.Vector2();
+  posRender = renderer.getSize();
+  var x = ( (event.clientX - 0) / posRender.x ) * 2.5 - 1;
+  var y = - ( (event.clientY - 0) / posRender.y ) * 2.8 + 1;
+  var boxPos = boundingBoxButton.geometry.attributes.position.array;
+  if (
+      boxPos[0] >= x &&
+      boxPos[3] <= x &&
+      boxPos[1] >= y &&
+      boxPos[7] <= y 
+  ) {
+    childWindow = window.open(newTabUrl);
+  }
+  // console.log(x, y);
+  // console.log( boxPos[3] );
 }
 document.addEventListener("mousedown", onMouseDown, false);
 
