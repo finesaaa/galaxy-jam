@@ -39,6 +39,8 @@ var cameraIntroTime = 4000;
 var cameraIntroDone = false;
 var cameraInitialTimestamp = null;
 
+var sound;
+
 var stars = [];
 
 const text = "galaxy...";
@@ -172,9 +174,9 @@ function initializeWorld() {
   const listener = new THREE.AudioListener();
   listener.autoplay = true;
 
-  const sound = new THREE.Audio( listener );
+  sound = new THREE.Audio( listener );
 
-  audioLoader.load( './../../assets/sounds/call-you-mine.mp3', function( buffer ) {
+  audioLoader.load( './../../assets/sounds/intro.mp3', function( buffer ) {
     sound.setBuffer( buffer );
     sound.setLoop( true );
     sound.play();
@@ -268,6 +270,18 @@ function drawText()
     }
   }
 }
+
+function onKeydown(event) {
+  if (event.keyCode == 32) {
+    if (sound != undefined) {
+      if (sound.isPlaying)
+        sound.pause();
+      else
+        sound.play();
+    }
+  } 
+}
+document.addEventListener("keydown", onKeydown, false);
 
 function updateIntro()
 {
