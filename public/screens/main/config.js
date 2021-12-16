@@ -2,10 +2,17 @@ const perspectiveAttrs = {
   fov: 50,
   near: 0.1,
   far: 5000,
-  initailPosition: {
-    x: 0,
-    y: 0,
-    z: 5,
+  initial: {
+    position: {
+      x: -49.71089622621824,
+      y: 1.1048288424092543,
+      z: 76.52462576588947,
+    },
+    lookAt: {
+      x: -50,
+      y: 0.625,
+      z: 75,
+    }
   },
   followRocket: {
     enabled: true,

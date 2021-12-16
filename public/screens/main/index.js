@@ -49,6 +49,7 @@ var gamePointElement = document.getElementById("game-point");
 
 var isTherePlanet = false;
 var planetModel;
+var planetCounter = 1;
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
@@ -340,9 +341,17 @@ function initializeCamera() {
     perspectiveAttrs.near,
     perspectiveAttrs.far
   );
-  camera.position.x = perspectiveAttrs.initailPosition.x;
-  camera.position.y = perspectiveAttrs.initailPosition.y;
-  camera.position.z = perspectiveAttrs.initailPosition.z;
+  camera.position.x = perspectiveAttrs.initial.position.x;
+  camera.position.y = perspectiveAttrs.initial.position.y;
+  camera.position.z = perspectiveAttrs.initial.position.z;
+
+  camera.lookAt(
+    new THREE.Vector3(
+      perspectiveAttrs.initial.lookAt.x,
+      perspectiveAttrs.initial.lookAt.y + perspectiveAttrs.followRocket.additionalY * 0.5,
+      perspectiveAttrs.initial.lookAt.z
+    )
+  );
 }
 
 function initializeWorld() {
@@ -614,6 +623,10 @@ function updateObjects() {
     !isTherePlanet
   ) {
     putPlanet();
+  } else {
+    if (isTherePlanet) {
+      planetCounter -= rocketAttrs.movement.speed;
+    }
   }
 }
 
