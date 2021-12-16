@@ -31,6 +31,12 @@ var stars = [];
 
 var mixers = [];
 
+var pointModel;
+var pointCounter = gameAttrs.pointFraction;
+
+var asteroidsModel = [];
+var asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
+
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97) {
     // A atau a
@@ -54,13 +60,29 @@ function onKeydown(event) {
 }
 document.addEventListener("keydown", onKeydown, false);
 
-function onResize(event) {
+function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", onResize, false);
+
+function getRandom(max) {
+  return Math.random() * max;
+}
+
+function getRandomInt(max) {
+  return Math.floor(getRandom(max));
+}
+
+function interpolate(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function ease(t) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
 
 function createPath(scale) {
   var path = new THREE.CurvePath();
@@ -136,8 +158,10 @@ function addStar(zPosition, scale = starAttrs.scale) {
   var sphere = new THREE.Mesh(geometry, material);
 
   sphere.scale.x = sphere.scale.y = scale;
-  sphere.position.x = Math.random() * 1000 - 500;
-  sphere.position.y = Math.random() * 1000 - 500;
+  sphere.position.x =
+    getRandom(starAttrs.position.zMax) - starAttrs.position.zMax / 2;
+  sphere.position.y =
+    getRandom(starAttrs.position.zMax) - starAttrs.position.zMax / 2;
   sphere.position.z = zPosition;
 
   scene.add(sphere);
@@ -198,6 +222,34 @@ function loadModels() {
       scene.add(model);
     });
   }
+
+  loader.load(pointAttrs.src, function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(pointAttrs.scale, pointAttrs.scale, pointAttrs.scale);
+
+    model.traverse(function (child) {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+
+    pointModel = model;
+  });
+
+  asteroidsAttrs.forEach(function (asteroid) {
+    loader.load(asteroid.src, function (gltf) {
+      const model = gltf.scene;
+      model.scale.set(asteroid.scale, asteroid.scale, asteroid.scale);
+
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+        }
+      });
+
+      asteroidsModel.push(model);
+    });
+  });
 }
 
 function inializeObjects() {
@@ -256,19 +308,9 @@ function initializeWorld() {
   inializeObjects();
 }
 
-function interpolation(a, b, t) {
-  return a + (b - a) * t;
-}
-
-function ease(t) {
-  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
 function updateRocket() {
   const nextPosition = paths[rocketIndex].getPoint(rocketFraction);
   const tangent = paths[rocketIndex].getTangent(rocketFraction);
-
-  console.log(tangent);
 
   var newX = nextPosition.x;
   var newY = nextPosition.y;
@@ -283,21 +325,9 @@ function updateRocket() {
     }
 
     const currentPosition = paths[rocketIndexBefore].getPoint(rocketFraction);
-    newX = interpolation(
-      currentPosition.x,
-      nextPosition.x,
-      ease(rocketMovement)
-    );
-    newY = interpolation(
-      currentPosition.y,
-      nextPosition.y,
-      ease(rocketMovement)
-    );
-    newZ = interpolation(
-      currentPosition.z,
-      nextPosition.z,
-      ease(rocketMovement)
-    );
+    newX = interpolate(currentPosition.x, nextPosition.x, ease(rocketMovement));
+    newY = interpolate(currentPosition.y, nextPosition.y, ease(rocketMovement));
+    newZ = interpolate(currentPosition.z, nextPosition.z, ease(rocketMovement));
   }
   const newPosition = new THREE.Vector3(newX, newY, newZ);
 
@@ -342,6 +372,46 @@ function updateRocket() {
   }
 }
 
+function updateObstacle() {
+  pointCounter -= rocketAttrs.movement.speed;
+  asteroidCounter -= rocketAttrs.movement.speed;
+
+  if (pointCounter <= 0) {
+    pointCounter = gameAttrs.pointFraction;
+
+    let fraction = rocketFraction + gameAttrs.additionalPointFraction;
+    if (fraction >= 1.0) {
+      fraction -= 1.0;
+    }
+
+    let index = getRandomInt(paths.length);
+    let position = paths[index].getPoint(fraction);
+
+    pointModel.position.set(position.x, position.y, position.z);
+    scene.add(pointModel);
+  }
+
+  if (asteroidCounter <= 0) {
+    asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
+
+    let fraction = rocketFraction + gameAttrs.additionalPointFraction;
+    if (fraction >= 1.0) {
+      fraction -= 1.0;
+    }
+
+    let index = getRandomInt(paths.length);
+    let position = paths[index].getPoint(fraction);
+    let asteroidIndex = getRandomInt(asteroidsModel.length);
+
+    asteroidsModel[asteroidIndex].position.set(
+      position.x,
+      position.y,
+      position.z
+    );
+    scene.add(asteroidsModel[asteroidIndex]);
+  }
+}
+
 function updateObjects() {
   for (var i = 0; i < stars.length; i++) {
     var star = stars[i];
@@ -361,6 +431,8 @@ function updateObjects() {
   if (rocket !== undefined) {
     updateRocket();
   }
+
+  updateObstacle();
 }
 
 function render() {

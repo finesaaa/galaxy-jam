@@ -4,12 +4,12 @@ const perspectiveAttrs = {
   far: 5000,
   initailPosition: {
     x: 0,
-    y: 20,
-    z: 0,
+    y: 0,
+    z: 5,
   },
   followRocket: {
     enabled: true,
-    subtraction: 0.0025,
+    subtraction: 0.002,
     additionalY: 0.5,
   },
 };
@@ -78,7 +78,7 @@ const rocketAttrs = {
     scaleAddition: 0.003,
   },
   movement: {
-    speed: 0.0008,
+    speed: 0.0005,
     delta: 0.05,
   },
 };
@@ -89,15 +89,15 @@ const planetsAttrs = {
     name: "mercury",
     src: "./../../assets/models/mercury/scene.gltf",
     scale: planetBaseScale / 15,
-    pathScale: rocketAttrs.path.scale + (rocketAttrs.path.scaleAddition * 7.5),
-    pathFraction: 0.02,
+    pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 7.5,
+    pathFraction: 0.04,
     speed: 0,
   },
   venus: {
     name: "venus",
     src: "./../../assets/models/venus/scene.gltf",
     scale: planetBaseScale / 27,
-    pathScale: rocketAttrs.path.scale - (rocketAttrs.path.scaleAddition * 22),
+    pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.1,
     speed: 0,
   },
@@ -105,7 +105,7 @@ const planetsAttrs = {
     name: "earth",
     src: "./../../assets/models/earth/scene.gltf",
     scale: planetBaseScale / 27,
-    pathScale: rocketAttrs.path.scale + (rocketAttrs.path.scaleAddition * 22),
+    pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.2,
     speed: 0,
   },
@@ -113,7 +113,7 @@ const planetsAttrs = {
     name: "mars",
     src: "./../../assets/models/mars/scene.gltf",
     scale: planetBaseScale / 25,
-    pathScale: rocketAttrs.path.scale - (rocketAttrs.path.scaleAddition * 16),
+    pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 16,
     pathFraction: 0.28,
     speed: 0,
   },
@@ -121,7 +121,7 @@ const planetsAttrs = {
     name: "jupiter",
     src: "./../../assets/models/jupiter/scene.gltf",
     scale: planetBaseScale / 50,
-    pathScale: rocketAttrs.path.scale + (rocketAttrs.path.scaleAddition * 120),
+    pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 120,
     pathFraction: 0.45,
     speed: 0,
   },
@@ -129,7 +129,7 @@ const planetsAttrs = {
     name: "saturn",
     src: "./../../assets/models/saturn/scene.gltf",
     scale: planetBaseScale / 40,
-    pathScale: rocketAttrs.path.scale - (rocketAttrs.path.scaleAddition * 85),
+    pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 85,
     pathFraction: 0.75,
     speed: 0,
   },
@@ -137,7 +137,7 @@ const planetsAttrs = {
     name: "uranus",
     src: "./../../assets/models/uranus/scene.gltf",
     scale: planetBaseScale / 130,
-    pathScale: rocketAttrs.path.scale + (rocketAttrs.path.scaleAddition * 22),
+    pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.85,
     speed: 0,
   },
@@ -145,8 +145,33 @@ const planetsAttrs = {
     name: "neptune",
     src: "./../../assets/models/neptune/scene.gltf",
     scale: planetBaseScale / 140,
-    pathScale: rocketAttrs.path.scale - (rocketAttrs.path.scaleAddition * 22),
+    pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.94,
     speed: 0,
   },
+};
+
+const pointAttrs = {
+  name: "star",
+  src: "./../../assets/models/star/scene.gltf",
+  scale: 0.005,
+};
+
+const asteroidsAttrs = [
+  {
+    name: "asteroid",
+    src: "./../../assets/models/asteroid/scene.gltf",
+    scale: 0.005,
+  },
+  {
+    name: "metal-asteroid",
+    src: "./../../assets/models/metal-asteroid/scene.gltf",
+    scale: 0.005,
+  },
+];
+
+const gameAttrs = {
+  pointFraction: 0.15,
+  additionalPointFraction: 0.15,
+  asteroidMux: 2,
 };
