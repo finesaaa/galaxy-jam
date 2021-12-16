@@ -44,7 +44,7 @@ const starAttrs = {
   position: {
     zMin: -2000,
     zMax: 2000,
-    zGap: 20,
+    zGap: 10,
   },
   speed: 100,
 };
@@ -91,7 +91,7 @@ const rocketAttrs = {
     scaleAddition: 0.003,
   },
   movement: {
-    speed: rocketSpeed,
+    speed: 0,
     delta: rocketSpeed * (100 + (1000 * (baseRocketSpeed - rocketSpeed))),
   },
 };
@@ -105,7 +105,10 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 7.5,
     pathFraction: 0.04,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.01,
+      offsetY: 0.12
+    },
   },
   venus: {
     name: "venus",
@@ -114,7 +117,10 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.1,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.0012,
+      offsetY: 0.12
+    },
   },
   earth: {
     name: "earth",
@@ -123,16 +129,22 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.2,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.0012,
+      offsetY: 0.12
+    },
   },
   mars: {
     name: "mars",
     src: "./../../assets/models/mars/scene.gltf",
     scale: planetBaseScale / 25,
     pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 16,
-    pathFraction: 0.28,
+    pathFraction: 0.3,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.0018,
+      offsetY: 0.12
+    },
   },
   jupiter: {
     name: "jupiter",
@@ -141,7 +153,10 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 120,
     pathFraction: 0.45,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.00008,
+      offsetY: 0.12
+    },
   },
   saturn: {
     name: "saturn",
@@ -150,7 +165,10 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 85,
     pathFraction: 0.75,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.0001,
+      offsetY: 0.12
+    },
   },
   uranus: {
     name: "uranus",
@@ -159,7 +177,10 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.85,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.00028,
+      offsetY: 0.12
+    },
   },
   neptune: {
     name: "neptune",
@@ -168,7 +189,10 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.94,
     speed: 0,
-    miniScale: 0.0001,
+    mini: {
+      scale: 0.0003,
+      offsetY: 0.12
+    },
   },
 };
 
@@ -207,5 +231,5 @@ const gameAttrs = {
   pointFraction: 0.15,
   additionalPointFraction: 0.1,
   asteroidMux: 1.3,
-  planetPoint: 4,
+  planetPoint: 2,
 };

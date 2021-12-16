@@ -45,7 +45,10 @@ var asteroidObjects = {};
 var asteroidObjectNum = 0;
 
 var gamePoint = 0;
-var gamePointElement = document.getElementById('game-point');
+var gamePointElement = document.getElementById("game-point");
+
+var isTherePlanet = false;
+var planetModel;
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
@@ -55,21 +58,33 @@ function onKeydown(event) {
       isRocketMove = true;
       rocketIndex -= 1;
     }
-  } else if (event.keyCode == 68 || event.keyCode == 100 || event.keyCode == 39) {
+  } else if (
+    event.keyCode == 68 ||
+    event.keyCode == 100 ||
+    event.keyCode == 39
+  ) {
     // D atau d
     if (rocketIndex + 1 < paths.length && !isRocketMove) {
       rocketIndexBefore = rocketIndex;
       isRocketMove = true;
       rocketIndex += 1;
     }
-  } else if (event.keyCode == 87 || event.keyCode == 119 || event.keyCode == 38) {
+  } else if (
+    event.keyCode == 87 ||
+    event.keyCode == 119 ||
+    event.keyCode == 38
+  ) {
     // W atau w
-    rocketAttrs.movement.speed = rocketSpeed 
-    isRocketMove = true
-  } else if (event.keyCode == 83 || event.keyCode == 115 || event.keyCode == 40) {
+    rocketAttrs.movement.speed = rocketSpeed;
+    isRocketMove = true;
+  } else if (
+    event.keyCode == 83 ||
+    event.keyCode == 115 ||
+    event.keyCode == 40
+  ) {
     // S atau s
-    rocketAttrs.movement.speed = 0
-    isRocketMove = false
+    rocketAttrs.movement.speed = 0;
+    isRocketMove = false;
   }
 }
 document.addEventListener("keydown", onKeydown, false);
@@ -351,6 +366,16 @@ function initializeWorld() {
   inializeObjects();
 }
 
+function removeModelFromScene(model) {
+  scene.remove(model);
+  model.traverse(function (child) {
+    if (child.isMesh) {
+      child.geometry.dispose();
+      child.material.dispose();
+    }
+  });
+}
+
 function updateRocket() {
   const nextPosition = paths[rocketIndex].getPoint(rocketFraction);
   const tangent = paths[rocketIndex].getTangent(rocketFraction);
@@ -422,17 +447,13 @@ function updateObstaclesExsistence(objects, type = "") {
 
     if (
       object.index === rocketIndex &&
-      valueInside(
-        object.fraction,
-        cameraFraction,
-        rocketFraction
-      )
+      valueInside(object.fraction, cameraFraction, rocketFraction)
     ) {
       indices.push(key);
 
       gamePoint++;
       if (type === "point") {
-        gamePointElement.innerHTML = `Point ${gamePoint}`
+        gamePointElement.innerHTML = `Point ${gamePoint}`;
       }
     } else if (object.fraction < cameraFraction) {
       indices.push(key);
@@ -440,14 +461,7 @@ function updateObstaclesExsistence(objects, type = "") {
   }
 
   indices.forEach(function (indexName) {
-    scene.remove(objects[indexName].model);
-    objects[indexName].model.traverse(function (child) {
-      if (child.isMesh) {
-        child.geometry.dispose();
-        child.material.dispose();
-      }
-    });
-
+    removeModelFromScene(objects[indexName].model);
     delete objects[indexName];
   });
 }
@@ -537,13 +551,39 @@ function updateObstacle() {
 }
 
 function putPlanet() {
-  let index = getRandomInt(planetObjects.length);
+  let index = getRandomInt(Object.keys(planetObjects).length);
 
   for (var key in planetObjects) {
-    let planet = planetObjects[key];
+    if (index === 0) {
+      let planet = planetObjects[key];
+      let model = planet.model.clone();
+      let pathIndex;
 
-    
+      if (planetsAttrs[key].scale < rocketAttrs.scale) {
+        pathIndex = paths.length - 1;
+      } else {
+        pathIndex = 0;
+      }
+
+      let planetPosition = paths[pathIndex].getPoint(planet.fraction);
+      model.position.copy(planetPosition);
+      model.scale.set(planetsAttrs[key].mini.scale);
+
+      planetModel = model;
+      isTherePlanet = true;
+
+      scene.add(planetModel);
+
+      console.log(`new planet ${key}`);
+
+      break;
+    } else {
+      index--;
+    }
   }
+
+  console.log("put planet");
+  console.log(index);
 }
 
 function updateObjects() {
@@ -568,7 +608,11 @@ function updateObjects() {
 
   updateObstacle();
 
-  if (gamePoint % gameAttrs.planetPoint === 0) {
+  if (
+    gamePoint !== 0 &&
+    gamePoint % gameAttrs.planetPoint === 0 &&
+    !isTherePlanet
+  ) {
     putPlanet();
   }
 }
