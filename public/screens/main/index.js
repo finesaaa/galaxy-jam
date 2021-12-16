@@ -49,7 +49,7 @@ var gamePointElement = document.getElementById("game-point");
 
 var isTherePlanet = false;
 var planetModel;
-var planetCounter = 1;
+var planetCounter = gameAttrs.planet.fractionCounter;
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
@@ -70,22 +70,6 @@ function onKeydown(event) {
       isRocketMove = true;
       rocketIndex += 1;
     }
-  } else if (
-    event.keyCode == 87 ||
-    event.keyCode == 119 ||
-    event.keyCode == 38
-  ) {
-    // W atau w
-    rocketAttrs.movement.speed = rocketSpeed;
-    isRocketMove = true;
-  } else if (
-    event.keyCode == 83 ||
-    event.keyCode == 115 ||
-    event.keyCode == 40
-  ) {
-    // S atau s
-    rocketAttrs.movement.speed = 0;
-    isRocketMove = false;
   }
 }
 document.addEventListener("keydown", onKeydown, false);
@@ -232,7 +216,8 @@ function loadModels() {
     let planetAttrs = planetsAttrs[key];
 
     loader.load(planetAttrs.src, function (gltf) {
-      const model = gltf.scene;
+      const baseModel = gltf.scene;
+      const model = baseModel.clone();
       model.scale.set(planetAttrs.scale, planetAttrs.scale, planetAttrs.scale);
 
       model.traverse(function (child) {
@@ -250,7 +235,7 @@ function loadModels() {
       mixers.push(mixer);
 
       planetObjects[planetAttrs.name] = {
-        model: model,
+        model: baseModel,
         path: modelPath,
         fraction: planetAttrs.pathFraction,
       };
@@ -348,7 +333,8 @@ function initializeCamera() {
   camera.lookAt(
     new THREE.Vector3(
       perspectiveAttrs.initial.lookAt.x,
-      perspectiveAttrs.initial.lookAt.y + perspectiveAttrs.followRocket.additionalY * 0.5,
+      perspectiveAttrs.initial.lookAt.y +
+        perspectiveAttrs.followRocket.additionalY * 0.5,
       perspectiveAttrs.initial.lookAt.z
     )
   );
@@ -568,31 +554,36 @@ function putPlanet() {
       let model = planet.model.clone();
       let pathIndex;
 
-      if (planetsAttrs[key].scale < rocketAttrs.scale) {
+      if (planetsAttrs[key].pathScale < rocketAttrs.path.scale) {
         pathIndex = paths.length - 1;
       } else {
         pathIndex = 0;
       }
 
       let planetPosition = paths[pathIndex].getPoint(planet.fraction);
-      model.position.copy(planetPosition);
-      model.scale.set(planetsAttrs[key].mini.scale);
+      model.position.copy(
+        new THREE.Vector3(
+          planetPosition.x,
+          planetPosition.y + planetsAttrs[key].mini.offsetY,
+          planetPosition.z
+        )
+      );
+      model.scale.set(
+        planetsAttrs[key].mini.scale,
+        planetsAttrs[key].mini.scale,
+        planetsAttrs[key].mini.scale
+      );
 
       planetModel = model;
       isTherePlanet = true;
 
       scene.add(planetModel);
 
-      console.log(`new planet ${key}`);
-
       break;
     } else {
       index--;
     }
   }
-
-  console.log("put planet");
-  console.log(index);
 }
 
 function updateObjects() {
@@ -617,15 +608,23 @@ function updateObjects() {
 
   updateObstacle();
 
-  if (
-    gamePoint !== 0 &&
-    gamePoint % gameAttrs.planetPoint === 0 &&
-    !isTherePlanet
-  ) {
-    putPlanet();
-  } else {
-    if (isTherePlanet) {
-      planetCounter -= rocketAttrs.movement.speed;
+  if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
+    if (
+      gamePoint !== 0 &&
+      gamePoint % gameAttrs.planet.point === 0 &&
+      !isTherePlanet
+    ) {
+      putPlanet();
+    } else {
+      if (isTherePlanet) {
+        planetCounter -= rocketAttrs.movement.speed;
+
+        if (planetCounter <= 0) {
+          removeModelFromScene(planetModel);
+          isTherePlanet = false;
+          planetCounter = gameAttrs.planet.fractionCounter;
+        }
+      }
     }
   }
 }
