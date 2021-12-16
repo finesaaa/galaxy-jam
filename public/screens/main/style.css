@@ -18,7 +18,7 @@
   padding: 20px;
   border: 1px solid #888;
   border-radius: 16px;
-  width: 60%;  
+  width: 28%;  
 }
 
 .close {
@@ -129,17 +129,25 @@ body {
 
 @media only screen and (max-width: 1000px) {
   .title-container {
-    width: 55%;
+    width: 100%;
   }
 
   .title {
     width: 100%;
   }
+
+  .modal-content {
+    width: 32%;  
+  }
 }
 
 @media only screen and (max-width: 900px) {
   .title-container {
-    width: 60%;
+    width: 100% !important;
+  }
+
+  .modal-content {
+    width: 35%;  
   }
 
   .title h1 {
@@ -153,7 +161,7 @@ body {
 
 @media only screen and (max-width: 790px) {
   .title-container {
-    width: 70%;
+    width: 100% !important;
     left: 50%;
     transform: translate(-50%, -150%);
     text-align: center;
@@ -162,11 +170,19 @@ body {
   .title p {
     color: rgb(248, 248, 248);
   }
+
+  .modal-content {
+    width: 40%;  
+  }
 }
 
 @media only screen and (max-width: 700px) {
   .title-container {
     width: 100%;
+  }
+
+  .modal-content {
+    width: 50%;  
   }
 }
 
@@ -174,16 +190,28 @@ body {
   .title-container {
     width: 100%;
   }
+
+  .modal-content {
+    width: 50%;  
+  }
 }
 
 @media only screen and (max-width: 544px) {
   .title-container {
     width: 100%;
   }
+
+  .modal-content {
+    width: 50%;  
+  }
 }
 
 @media only screen and (max-width: 472px) {
   .title-container {
     width: 100%;
+  }
+
+  .modal-content {
+    width: 50%;  
   }
 }

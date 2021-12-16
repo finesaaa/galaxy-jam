@@ -63,3 +63,22 @@ const planetsAttrs = {
     },
   },
 };
+
+const soundAttrs = {
+  src: "./../../assets/sounds/intro.mp3"
+};
+
+const fontAttrs = {
+  src: "./../../assets/fonts/poppins-semibold.json",
+  size: 2,
+  height: 0.1,
+};
+
+const btnStartAttrs = {
+  src: "./../../assets/textures/start.png"
+};
+
+const mainPageUrl = {
+  education: "./../main/education/index.html",
+  game: "./../main/game/index.html",
+}
