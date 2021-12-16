@@ -58,7 +58,7 @@ const starAttrs = {
 
 const pathLineAttrs = {
   divisions: 70,
-  color: 0xffffaa,
+  color: 0xB1907F,
   pathPoints: [
     [-8, 0.1, 12],
     [-9, 0.2, 7],
@@ -258,4 +258,8 @@ const gameAttrs = {
       },
     },
   },
+};
+
+const soundAttrs = {
+  src: "./../../../assets/sounds/main.mp3"
 };

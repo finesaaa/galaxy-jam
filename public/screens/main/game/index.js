@@ -380,7 +380,7 @@ function initializeWorld() {
   const listener = new THREE.AudioListener();
   const sound = new THREE.Audio( listener );
 
-  audioLoader.load( './../../assets/sounds/main.mp3', function( buffer ) {
+  audioLoader.load( soundAttrs.src, function( buffer ) {
     sound.setBuffer( buffer );
     sound.setLoop( true );
     sound.play();

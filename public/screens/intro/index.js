@@ -53,16 +53,15 @@ var gameModeBtn = document.getElementById("game-mode-btn");
 var educationModeBtn = document.getElementById("education-mode-btn");
 
 var childWindow = "";
-var newTabUrl = "./../main/index.html";
 
 gameModeBtn.onclick = function() {
   sessionStorage.setItem("mode", 1);
-  childWindow = window.open(newTabUrl, "_self");
+  childWindow = window.open(mainPageUrl.game, "_self");
 }
 
 educationModeBtn.onclick = function() {
   sessionStorage.setItem("mode", 2);
-  childWindow = window.open(newTabUrl, "_self");
+  childWindow = window.open(mainPageUrl.education, "_self");
 }
 
 function addStar(zPosition, scale = starAttrs.scale) {
@@ -120,7 +119,7 @@ function loadModels() {
     sunActions.clipAction(gltf.animations[0]).play();
   });
 
-  var cubeTexture = new THREE.ImageUtils.loadTexture("./../../assets/textures/start.png"); 
+  var cubeTexture = new THREE.ImageUtils.loadTexture(btnStartAttrs.src); 
 
   const buttonGeometry = new THREE.BoxGeometry(4.5, 1.5, 1);
   const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: cubeTexture });
@@ -176,7 +175,7 @@ function initializeWorld() {
 
   sound = new THREE.Audio( listener );
 
-  audioLoader.load( './../../assets/sounds/intro.mp3', function( buffer ) {
+  audioLoader.load( soundAttrs.src, function( buffer ) {
     sound.setBuffer( buffer );
     sound.setLoop( true );
     sound.play();
@@ -233,11 +232,11 @@ function drawText()
 
   for (let i = 0; i <= text.length; i++)
   {
-    fontLoader.load("./../../assets/fonts/poppins-semibold.json", function (font) {
+    fontLoader.load(fontAttrs.src, function (font) {
       var textGeo = new THREE.TextGeometry(text.charAt(i), {
         font: font,
-        size: 2,
-        height: 0.1,
+        size: fontAttrs.size,
+        height: fontAttrs.height,
         bevelEnabled: false,
       });
   
