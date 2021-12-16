@@ -115,6 +115,12 @@ function initializeWorld() {
 
   control = new OrbitControls(camera, renderer.domElement);
 
+  control.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN
+  }
+
   loader = new GLTFLoader();
 
   clock = new THREE.Clock();
@@ -146,10 +152,20 @@ function updateObjects() {
   }
 }
 
+window.addEventListener('resize', onWindowResize, false)
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render()
+}
+
 function render() {
   updateObjects();
 
   control.update();
+
+
   renderer.render(scene, camera);
 
   requestAnimationFrame(render);
