@@ -29,7 +29,7 @@ function inializePath()
     new THREE.Vector3(-0.5, 0, -1.4),
     new THREE.Vector3(-0.2, 0, 0.2),
     new THREE.Vector3(0.4, -0.4, -1),
-    new THREE.Vector3(0.5, -0.4, -1.9),
+    new THREE.Vector3(0.6, -0.4, -1.8),
   );
   pointsPath.add(line);
 }
