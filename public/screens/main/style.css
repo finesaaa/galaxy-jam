@@ -21,6 +21,10 @@
   width: 28%;  
 }
 
+#game-over-modal {
+  text-align: center;
+}
+
 .close {
   color: #aaa;
   float: right;
