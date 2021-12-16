@@ -92,7 +92,7 @@ body {
 
 @media only screen and (max-width: 1000px) {
   .title-container {
-    width: 55%;
+    width: 100%;
   }
 
   .title {
@@ -102,7 +102,7 @@ body {
 
 @media only screen and (max-width: 900px) {
   .title-container {
-    width: 60%;
+    width: 100%;
   }
 
   .title h1 {
@@ -116,7 +116,7 @@ body {
 
 @media only screen and (max-width: 790px) {
   .title-container {
-    width: 70%;
+    width: 100%;
     left: 50%;
     transform: translate(-50%, -150%);
     text-align: center;

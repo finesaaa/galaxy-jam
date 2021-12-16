@@ -168,6 +168,16 @@ function initializeWorld() {
 
   document.body.appendChild(renderer.domElement);
 
+  const audioLoader = new THREE.AudioLoader();
+  const listener = new THREE.AudioListener();
+  const sound = new THREE.Audio( listener );
+
+  audioLoader.load( './../../assets/sounds/call-you-mine.mp3', function( buffer ) {
+    sound.setBuffer( buffer );
+    sound.setLoop( true );
+    sound.play();
+  });
+
   var spotLight;
   var target;
   var targetGeometry;
