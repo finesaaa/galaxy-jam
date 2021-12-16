@@ -648,7 +648,7 @@ function updatePlanet() {
   if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
     if (
       gamePoint !== 0 &&
-      gamePoint % gameAttrs.planet.point === 0 &&
+      gamePoint % gameAttrs.planet.point == 0 &&
       !isTherePlanet &&
       idlePlanetCounter <= 0
     ) {
