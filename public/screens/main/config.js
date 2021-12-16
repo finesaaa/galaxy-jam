@@ -82,8 +82,8 @@ const pathLineAttrs = {
   isDrawLines: true,
 };
 
+var rocketSpeed = 0.0002;
 const baseRocketSpeed = 0.0005;
-const rocketSpeed = 0.0002;
 const rocketAttrs = {
   src: "./../../assets/models/rocket-astro/scene.gltf",
   scale: 0.001,
@@ -241,5 +241,21 @@ const gameAttrs = {
   planet: {
     point: 2,
     fractionCounter: 1,
+  },
+  rocket: {
+    limit: {
+      level1: {
+        point: 10,
+        speed: 0.0001,
+      },
+      level2: {
+        point: 30,
+        speed: 0.00025,
+      },
+      level3: {
+        limit: 60,
+        speed: 0.0005,
+      },
+    },
   },
 };
