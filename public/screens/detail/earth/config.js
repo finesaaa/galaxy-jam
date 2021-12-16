@@ -10,12 +10,12 @@ const perspectiveAttrs = {
 };
 
 const lightAttrs = {
-  color: 0xffffff,
-  intensity: 2.4,
+  color: 0xffffaa,
+  intensity: 4,
   initailPosition: {
-    x: 2,
-    y: 2,
-    z: 5,
+    x: 0,
+    y: 0,
+    z: 1,
   },
 };
 
@@ -49,8 +49,8 @@ const objectsAttrs = {
       z: Math.PI / 4,
     },
   },
-  mercuryAttrs: {
-    name: "mercury",
+  planetAttrs: {
+    name: "earth",
     src: "./../../../assets/models/earth/scene.gltf",
     scale: 0.007,
     initailPosition: {

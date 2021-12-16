@@ -49,10 +49,10 @@ const objectsAttrs = {
       z: Math.PI / 4,
     },
   },
-  mercuryAttrs: {
-    name: "mercury",
+  planetAttrs: {
+    name: "uranus",
     src: "./../../../assets/models/uranus/scene.gltf",
-    scale: 0.001,
+    scale: 0.0016,
     initailPosition: {
       x: 0,
       y: 0,
