@@ -10,6 +10,7 @@ var loader;
 
 var camera;
 var cameraIndex = 0;
+var cameraFraction;
 
 var light;
 
@@ -37,8 +38,14 @@ var mixers = [];
 var pointModel;
 var pointCounter = gameAttrs.pointFraction;
 
+var pointObjects = {};
+var pointObjectNum = 0;
+
 var asteroids = [];
 var asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
+
+var asteroidObjects = {};
+var asteroidObjectNum = 0;
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97) {
@@ -360,10 +367,10 @@ function updateRocket() {
   const radians = Math.acos(rocketDir.dot(tangent));
   rocket.quaternion.setFromAxisAngle(rocketAxis, radians);
 
-  var cameraFranction =
+  cameraFraction =
     rocketFraction - perspectiveAttrs.followRocket.subtraction;
-  if (cameraFranction < 0) {
-    cameraFranction += 1;
+  if (cameraFraction < 0) {
+    cameraFraction += 1;
   }
 
   camera.lookAt(
@@ -374,7 +381,7 @@ function updateRocket() {
     )
   );
   if (perspectiveAttrs.followRocket.enabled) {
-    const newCameraPosition = paths[cameraIndex].getPoint(cameraFranction);
+    const newCameraPosition = paths[cameraIndex].getPoint(cameraFraction);
     camera.position.copy(newCameraPosition);
     camera.position.y += perspectiveAttrs.followRocket.additionalY;
   }
@@ -395,6 +402,27 @@ function updateRocket() {
   }
 }
 
+function updateObstaclesExsistance(objects) {
+  let indices = [];
+  for (var key in objects) {
+    if (objects[key].fraction < cameraFraction) {
+      indices.push(key);
+    }
+  }
+
+  indices.forEach(function(indexName) {
+    scene.remove(objects[indexName].model);
+    objects[indexName].model.traverse(function (child) {
+      if (child.isMesh) {
+        child.geometry.dispose();
+        child.material.dispose();
+      }
+    });
+
+    delete objects[indexName];
+  });
+}
+
 function updateObstacle() {
   pointCounter -= rocketAttrs.movement.speed;
   asteroidCounter -= rocketAttrs.movement.speed;
@@ -409,13 +437,21 @@ function updateObstacle() {
 
     let index = getRandomInt(paths.length);
     let position = paths[index].getPoint(fraction);
+    let model = pointModel.clone();
 
-    pointModel.position.set(
+    model.position.set(
       position.x,
       position.y + pointAttrs.offset.y,
       position.z
     );
-    scene.add(pointModel);
+    
+    pointObjectNum += 1;
+    pointObjects[`star ${pointObjectNum}`] = {
+      model: model,
+      fraction: fraction,
+    };
+
+    scene.add(model);
   }
 
   if (asteroidCounter <= 0 && asteroids.length !== 0) {
@@ -429,14 +465,25 @@ function updateObstacle() {
     let index = getRandomInt(paths.length);
     let position = paths[index].getPoint(fraction);
     let asteroidIndex = getRandomInt(asteroids.length);
+    let model = asteroids[asteroidIndex].model.clone();
 
-    asteroids[asteroidIndex].model.position.set(
+    model.position.set(
       position.x,
       position.y + asteroids[asteroidIndex].offsetY,
       position.z,
     );
-    scene.add(asteroids[asteroidIndex].model);
+
+    asteroidObjectNum += 1;
+    asteroidObjects[`asteroid ${asteroidObjectNum}`] = {
+      model: model,
+      fraction: fraction,
+    }
+
+    scene.add(model);
   }
+
+  updateObstaclesExsistance(pointObjects);
+  updateObstaclesExsistance(asteroidObjects);
 }
 
 function updateObjects() {
