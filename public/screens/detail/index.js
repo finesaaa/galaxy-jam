@@ -9,9 +9,46 @@ var control;
 var loader;
 var clock;
 
+var rocket;
+
 var stars = [];
 var mixers = [];
 var objectsModel = {};
+
+var fraction = 0;
+const up = new THREE.Vector3(0, 0, -1);
+const axis = new THREE.Vector3();
+var pointsPath;
+
+function inializePath()
+{
+  rocket = new THREE.Mesh();
+
+  pointsPath = new THREE.CurvePath();
+  const line = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(-0.5, 0, -1.4),
+    new THREE.Vector3(-0.2, 0, 0.2),
+    new THREE.Vector3(0.4, -0.4, -1),
+    new THREE.Vector3(0.5, -0.4, -1.9),
+  );
+  pointsPath.add(line);
+}
+
+function updatePath()
+{
+  const newPosition = pointsPath.getPoint(fraction);
+  const tangent = pointsPath.getTangent(fraction);
+  rocket.position.copy(newPosition);
+
+  axis.crossVectors(up, tangent).normalize();
+  const radians = Math.acos(up.dot(tangent));
+  rocket.quaternion.setFromAxisAngle(axis, radians);
+
+  fraction += 0.001;
+  if (fraction > 1) {
+    fraction = 0;
+  }
+}
 
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -57,7 +94,6 @@ function addStar(zPosition, scale = starAttrs.scale) {
 function loadModels() {
   for (var key in objectsAttrs) {
     let objectAttrs = objectsAttrs[key];
-
     loader.load(objectAttrs.src, function (gltf) {
       const model = gltf.scene;
       model.scale.set(objectAttrs.scale, objectAttrs.scale, objectAttrs.scale);
@@ -77,6 +113,8 @@ function loadModels() {
       objectsModel[objectAttrs.name] = model;
       
       scene.add(model);
+      if (objectAttrs.name == "rocket")
+        rocket = model
     });
   }
 }
@@ -129,6 +167,16 @@ function initializeWorld() {
 
   loadModels();
   initializeObjects();
+
+  inializePath();
+
+  const material = new THREE.LineBasicMaterial({
+    color: 0x808080
+  });
+  const pointsLine = pointsPath.curves.reduce((p, d)=> [...p, ...d.getPoints(20)], []);
+  const geometry = new THREE.BufferGeometry().setFromPoints( pointsLine );
+  const pathLine = new THREE.Line( geometry, material );
+  // scene.add(pathLine);
 }
 
 function updateObjects() {
@@ -141,6 +189,8 @@ function updateObjects() {
       star.position.z -= (starAttrs.position.zMax * 2);
     }
   }
+
+  updatePath();
 
   mixers.forEach(function (mixer) {
     mixer.update(clock.getDelta());
