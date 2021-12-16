@@ -170,6 +170,8 @@ function initializeWorld() {
 
   const audioLoader = new THREE.AudioLoader();
   const listener = new THREE.AudioListener();
+  listener.autoplay = true;
+
   const sound = new THREE.Audio( listener );
 
   audioLoader.load( './../../assets/sounds/call-you-mine.mp3', function( buffer ) {
@@ -247,9 +249,9 @@ function drawText()
         addition -= 1.0
         
       if (i > 0)
-        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 13.8, 550);
+        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 14, 550);
       else
-        textMeshs[i].position.set(-6.1, 13.8, 550);
+        textMeshs[i].position.set(-6.1, 14, 550);
       textMeshs[i].rotation.set(0, -0.2, 0);
       scene.add(textMeshs[i]);
     });
