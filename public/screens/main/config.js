@@ -15,13 +15,24 @@ const perspectiveAttrs = {
 };
 
 const lightAttrs = {
-  color: 0xffffff,
-  intensity: 2.4,
-  initailPosition: {
-    x: 2,
-    y: 2,
-    z: 5,
+  point: {
+    color: 0xffffff,
+    intensity: 2,
+    initailPosition: {
+      x: 2,
+      y: 2,
+      z: 5,
+    },
   },
+  ambient: {
+    color: 0xffffff,
+    intensity: 0.4,
+    initailPosition: {
+      x: 2,
+      y: 2,
+      z: 5,
+    },
+  }
 };
 
 const starAttrs = {
@@ -64,6 +75,7 @@ const pathLineAttrs = {
   isDrawLines: true,
 };
 
+const rocketSpeed = 0.00005;
 const rocketAttrs = {
   src: "./../../assets/models/rocket-astro/scene.gltf",
   scale: 0.001,
@@ -78,8 +90,8 @@ const rocketAttrs = {
     scaleAddition: 0.003,
   },
   movement: {
-    speed: 0.0005,
-    delta: 0.05,
+    speed: rocketSpeed,
+    delta: rocketSpeed * (100 + (1000 * (0.0005 - rocketSpeed))),
   },
 };
 
@@ -155,23 +167,32 @@ const pointAttrs = {
   name: "star",
   src: "./../../assets/models/star/scene.gltf",
   scale: 0.005,
+  offset: {
+    y: -0.02,
+  }
 };
 
 const asteroidsAttrs = [
   {
     name: "asteroid",
     src: "./../../assets/models/asteroid/scene.gltf",
-    scale: 0.005,
+    scale: 0.16,
+    offset: {
+      y: 0.12,
+    }
   },
   {
     name: "metal-asteroid",
     src: "./../../assets/models/metal-asteroid/scene.gltf",
-    scale: 0.005,
+    scale: 0.004,
+    offset: {
+      y: 0.13,
+    }
   },
 ];
 
 const gameAttrs = {
   pointFraction: 0.15,
   additionalPointFraction: 0.15,
-  asteroidMux: 2,
+  asteroidMux: 1.5,
 };

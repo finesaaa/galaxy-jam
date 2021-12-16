@@ -4,11 +4,14 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/l
 
 var scene;
 var renderer;
+
 var clock;
 var loader;
 
 var camera;
 var cameraIndex = 0;
+
+var light;
 
 var paths = [];
 
@@ -34,7 +37,7 @@ var mixers = [];
 var pointModel;
 var pointCounter = gameAttrs.pointFraction;
 
-var asteroidsModel = [];
+var asteroids = [];
 var asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
 
 function onKeydown(event) {
@@ -247,7 +250,10 @@ function loadModels() {
         }
       });
 
-      asteroidsModel.push(model);
+      asteroids.push({
+        model: model,
+        offsetY: asteroid.offset.y,
+      });
     });
   });
 }
@@ -273,7 +279,29 @@ function inializeObjects() {
   }
 }
 
-function initializeWorld() {
+function initializeLights() {
+  const ambientLight = new THREE.AmbientLight(
+    lightAttrs.ambient.color,
+    lightAttrs.ambient.intensity
+  );
+  scene.add(ambientLight);
+
+  light = new THREE.PointLight(
+    lightAttrs.point.color,
+    lightAttrs.point.intensity
+  );
+  light.position.set(
+    lightAttrs.point.initailPosition.x,
+    lightAttrs.point.initailPosition.y,
+    lightAttrs.point.initailPosition.z
+  );
+  scene.add(light);
+
+  const lightHelper = new THREE.PointLightHelper(light);
+  scene.add(lightHelper);
+}
+
+function initializeCamera() {
   camera = new THREE.PerspectiveCamera(
     perspectiveAttrs.fov,
     window.innerWidth / window.innerHeight,
@@ -283,25 +311,20 @@ function initializeWorld() {
   camera.position.x = perspectiveAttrs.initailPosition.x;
   camera.position.y = perspectiveAttrs.initailPosition.y;
   camera.position.z = perspectiveAttrs.initailPosition.z;
+}
 
+function initializeWorld() {
   scene = new THREE.Scene();
-
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
-
   document.body.appendChild(renderer.domElement);
 
   clock = new THREE.Clock();
-
   loader = new GLTFLoader();
 
-  const light = new THREE.PointLight(lightAttrs.color, lightAttrs.intensity);
-  light.position.set(
-    lightAttrs.initailPosition.x,
-    lightAttrs.initailPosition.y,
-    lightAttrs.initailPosition.z
-  );
-  scene.add(light);
+  initializeCamera();
+
+  initializeLights();
 
   loadModels();
 
@@ -376,7 +399,7 @@ function updateObstacle() {
   pointCounter -= rocketAttrs.movement.speed;
   asteroidCounter -= rocketAttrs.movement.speed;
 
-  if (pointCounter <= 0) {
+  if (pointCounter <= 0 && pointModel !== undefined) {
     pointCounter = gameAttrs.pointFraction;
 
     let fraction = rocketFraction + gameAttrs.additionalPointFraction;
@@ -387,11 +410,15 @@ function updateObstacle() {
     let index = getRandomInt(paths.length);
     let position = paths[index].getPoint(fraction);
 
-    pointModel.position.set(position.x, position.y, position.z);
+    pointModel.position.set(
+      position.x,
+      position.y + pointAttrs.offset.y,
+      position.z
+    );
     scene.add(pointModel);
   }
 
-  if (asteroidCounter <= 0) {
+  if (asteroidCounter <= 0 && asteroids.length !== 0) {
     asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
 
     let fraction = rocketFraction + gameAttrs.additionalPointFraction;
@@ -401,14 +428,14 @@ function updateObstacle() {
 
     let index = getRandomInt(paths.length);
     let position = paths[index].getPoint(fraction);
-    let asteroidIndex = getRandomInt(asteroidsModel.length);
+    let asteroidIndex = getRandomInt(asteroids.length);
 
-    asteroidsModel[asteroidIndex].position.set(
+    asteroids[asteroidIndex].model.position.set(
       position.x,
-      position.y,
-      position.z
+      position.y + asteroids[asteroidIndex].offsetY,
+      position.z,
     );
-    scene.add(asteroidsModel[asteroidIndex]);
+    scene.add(asteroids[asteroidIndex].model);
   }
 }
 
