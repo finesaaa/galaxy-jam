@@ -34,6 +34,9 @@
     <canvas class="webgl"></canvas>
 
     <script>
+      var mode = parseFloat(sessionStorage.getItem("mode"));
+      console.log("mode", mode);
+      
       var modal = document.getElementById("main-modal");
       var btn = document.getElementById("main-btn");
       var closeSpan = document.getElementsByClassName("close")[0];

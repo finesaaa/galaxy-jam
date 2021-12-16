@@ -50,6 +50,19 @@ var boundingBoxButton = null;
 var gameModeBtn = document.getElementById("game-mode-btn");
 var educationModeBtn = document.getElementById("education-mode-btn");
 
+var childWindow = "";
+var newTabUrl = "./../main/index.html";
+
+gameModeBtn.onclick = function() {
+  sessionStorage.setItem("mode", 1);
+  childWindow = window.open(newTabUrl, "_self");
+}
+
+educationModeBtn.onclick = function() {
+  sessionStorage.setItem("mode", 2);
+  childWindow = window.open(newTabUrl, "_self");
+}
+
 function addStar(zPosition, scale = starAttrs.scale) {
   var geometry = new THREE.SphereGeometry(
     starAttrs.radius,
@@ -293,30 +306,28 @@ function animateObjects() {
   }
 }
 
-var childWindow = "";
-var newTabUrl = "./../main/index.html";
 var windowWidth = window.innerWidth;
 var windowHeight = window.innerHeight;
 var time = 0;
 
-function onMouseDown(event) {
-  var posRender = new THREE.Vector2();
-  posRender = renderer.getSize();
-  var x = ( event.clientX /  windowWidth) * 4.2 - 1;
-  var y = - ( event.clientY / windowHeight ) * 10 + 16;
-  var boxPos = boundingBoxButton.geometry.attributes.position.array;
-  if (
-      boxPos[0] >= x &&
-      boxPos[3] <= x &&
-      boxPos[1] >= y &&
-      boxPos[7] <= y 
-  ) {
-    childWindow = window.open(newTabUrl, "_self");
-  }
-  console.log(x, y);
-  console.log( boxPos[0], boxPos[3], boxPos[1], boxPos[7] );
-}
-document.addEventListener("mousedown", onMouseDown, false);
+// function onMouseDown(event) {
+//   var posRender = new THREE.Vector2();
+//   posRender = renderer.getSize();
+//   var x = ( event.clientX /  windowWidth) * 4.2 - 1;
+//   var y = - ( event.clientY / windowHeight ) * 10 + 16;
+//   var boxPos = boundingBoxButton.geometry.attributes.position.array;
+//   if (
+//       boxPos[0] >= x &&
+//       boxPos[3] <= x &&
+//       boxPos[1] >= y &&
+//       boxPos[7] <= y 
+//   ) {
+//     childWindow = window.open(newTabUrl, "_self");
+//   }
+//   console.log(x, y);
+//   console.log( boxPos[0], boxPos[3], boxPos[1], boxPos[7] );
+// }
+// document.addEventListener("mousedown", onMouseDown, false);
 
 function render() {
   animateObjects();
