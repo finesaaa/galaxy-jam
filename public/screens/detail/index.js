@@ -196,9 +196,9 @@ function updateObjects() {
     mixer.update(clock.getDelta());
   });
 
-  var mercury = objectsModel[objectsAttrs.mercuryAttrs.name];
+  var mercury = objectsModel[objectsAttrs.planetAttrs.name];
   if (mercury !== undefined) {
-    mercury.rotation.y += objectsAttrs.mercuryAttrs.rotationSpeed;
+    mercury.rotation.y += objectsAttrs.planetAttrs.rotationSpeed;
   }
 }
 
