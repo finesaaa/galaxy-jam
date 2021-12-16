@@ -10,7 +10,7 @@
 .btn {
   margin-top: 9px !important;
   letter-spacing: 2px;
-  font-size: 20px !important;
+  font-size: 16px !important;
   background: #ffbb00 !important;
 }
 
@@ -118,12 +118,18 @@ body {
   .title-container {
     width: 100%;
     left: 50%;
+    top: 56%;
     transform: translate(-50%, -150%);
     text-align: center;
   }
 
   .title p {
     color: rgb(248, 248, 248);
+  }
+
+  .btn 
+  {
+    font-size: 14px !important;
   }
 }
 
