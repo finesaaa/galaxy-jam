@@ -32,18 +32,6 @@ var stars = [];
 
 var mixers = [];
 
-var pointModel;
-var pointCounter = gameAttrs.pointFraction;
-
-var pointObjects = {};
-var pointObjectNum = 0;
-
-var asteroids = [];
-var asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
-
-var asteroidObjects = {};
-var asteroidObjectNum = 0;
-
 var gamePoint = 0;
 var gamePointElement = document.getElementById("game-point");
 
@@ -58,8 +46,6 @@ var modal = document.getElementById("main-modal");
 var modalPlanetName = document.getElementById("modal-planet-name");
 var modalClose = document.getElementsByClassName("close")[0];
 var modalBtnShow = document.getElementById("detail-btn");
-
-var modalGameOver = document.getElementById("game-over-modal");
 
 var btnPlanetStatus = document.getElementById("main-btn");
 
@@ -270,37 +256,6 @@ function loadModels() {
       scene.add(model);
     });
   }
-
-  loader.load(pointAttrs.src, function (gltf) {
-    const model = gltf.scene;
-    model.scale.set(pointAttrs.scale, pointAttrs.scale, pointAttrs.scale);
-
-    model.traverse(function (child) {
-      if (child.isMesh) {
-        child.castShadow = true;
-      }
-    });
-
-    pointModel = model;
-  });
-
-  asteroidsAttrs.forEach(function (asteroid) {
-    loader.load(asteroid.src, function (gltf) {
-      const model = gltf.scene;
-      model.scale.set(asteroid.scale, asteroid.scale, asteroid.scale);
-
-      model.traverse(function (child) {
-        if (child.isMesh) {
-          child.castShadow = true;
-        }
-      });
-
-      asteroids.push({
-        model: model,
-        offsetY: asteroid.offset.y,
-      });
-    });
-  });
 }
 
 function inializeObjects() {
@@ -483,133 +438,6 @@ function updateRocket() {
     if (rocketFraction > 1) {
       rocketFraction = 0;
     }
-
-    for (var key in planetObjects) {
-      let planet = planetObjects[key];
-      const newPlanetPosition = planet.path.getPoint(planet.fraction);
-      planet.model.position.copy(newPlanetPosition);
-
-      planet.fraction += planetsAttrs[key].speed;
-      if (planet.fraction > 1) {
-        planet.fraction = 0;
-      }
-    }
-  }
-}
-
-function updateObstaclesExsistence(objects, type = "") {
-  let indices = [];
-  for (var key in objects) {
-    let object = objects[key];
-
-    if (
-      object.index === rocketIndex &&
-      valueInside(
-        object.fraction,
-        rocketFraction - rocketAttrs.movement.speed,
-        rocketFraction + rocketAttrs.movement.speed
-      )
-    ) {
-      indices.push(key);
-
-      if (type === "point") {
-        gamePoint++;
-        gamePointElement.innerHTML = `Point ${gamePoint}`;
-      } else if (type === "asteroid") {
-        modalGameOver.style.display = "block";
-      }
-    } else if (object.fraction < cameraFraction) {
-      indices.push(key);
-    }
-  }
-
-  indices.forEach(function (indexName) {
-    removeModelFromScene(objects[indexName].model);
-    delete objects[indexName];
-  });
-}
-
-function updateObstacle() {
-  pointCounter -= rocketAttrs.movement.speed;
-  asteroidCounter -= rocketAttrs.movement.speed;
-
-  let pointIndex = -1;
-
-  if (pointCounter <= 0 && pointModel !== undefined) {
-    pointCounter = gameAttrs.pointFraction;
-
-    let fraction = rocketFraction + gameAttrs.additionalPointFraction;
-    if (fraction >= 1.0) {
-      fraction -= 1.0;
-    }
-
-    let index = getRandomInt(paths.length);
-    let position = paths[index].getPoint(fraction);
-    let model = pointModel.clone();
-
-    model.position.set(
-      position.x,
-      position.y + pointAttrs.offset.y,
-      position.z
-    );
-
-    pointObjectNum += 1;
-    pointObjects[`star ${pointObjectNum}`] = {
-      model: model,
-      fraction: fraction,
-      index: index,
-    };
-
-    scene.add(model);
-
-    pointIndex = index;
-  }
-
-  if (asteroidCounter <= 0 && asteroids.length !== 0) {
-    asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
-
-    let fraction = rocketFraction + gameAttrs.additionalPointFraction;
-    if (fraction >= 1.0) {
-      fraction -= 1.0;
-    }
-
-    let index = getRandomInt(paths.length);
-
-    if (pointIndex !== -1 && index === pointIndex) {
-      if (index === 0) {
-        index += 1;
-      } else {
-        index -= 1;
-      }
-    }
-
-    let position = paths[index].getPoint(fraction);
-    let asteroidIndex = getRandomInt(asteroids.length);
-    let model = asteroids[asteroidIndex].model.clone();
-
-    model.position.set(
-      position.x,
-      position.y + asteroids[asteroidIndex].offsetY,
-      position.z
-    );
-
-    asteroidObjectNum += 1;
-    asteroidObjects[`asteroid ${asteroidObjectNum}`] = {
-      model: model,
-      fraction: fraction,
-      index: index,
-    };
-
-    scene.add(model);
-  }
-
-  updateObstaclesExsistence(pointObjects, "point");
-  updateObstaclesExsistence(asteroidObjects, "asteroid");
-
-  for (var key in pointObjects) {
-    let object = pointObjects[key];
-
-    object.model.rotation.y += pointAttrs.rotation.speed;
   }
 }
 
@@ -735,8 +563,6 @@ function updateObjects() {
 
   if (isGameUpdate) {
     updateRocket();
-
-    updateObstacle();
 
     updatePlanet();
   }
