@@ -48,8 +48,33 @@ var gamePoint = 0;
 var gamePointElement = document.getElementById("game-point");
 
 var isTherePlanet = false;
-var planetModel;
-var planetCounter = 1;
+
+var planetObject = {};
+
+var planetCounter = gameAttrs.planet.fractionCounter;
+var idlePlanetCounter = 0;
+
+var modal = document.getElementById("main-modal");
+var modalPlanetName = document.getElementById("modal-planet-name");
+var modalClose = document.getElementsByClassName("close")[0];
+var modalBtnShow = document.getElementById("detail-btn");
+
+var btnPlanetStatus = document.getElementById("main-btn");
+
+var isGameUpdate = true;
+
+modalClose.onclick = function () {
+  modal.style.display = "none";
+
+  isGameUpdate = true;
+  removePlanet();
+};
+
+window.onclick = function (event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+};
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
@@ -70,22 +95,6 @@ function onKeydown(event) {
       isRocketMove = true;
       rocketIndex += 1;
     }
-  } else if (
-    event.keyCode == 87 ||
-    event.keyCode == 119 ||
-    event.keyCode == 38
-  ) {
-    // W atau w
-    rocketAttrs.movement.speed = rocketSpeed;
-    isRocketMove = true;
-  } else if (
-    event.keyCode == 83 ||
-    event.keyCode == 115 ||
-    event.keyCode == 40
-  ) {
-    // S atau s
-    rocketAttrs.movement.speed = 0;
-    isRocketMove = false;
   }
 }
 document.addEventListener("keydown", onKeydown, false);
@@ -232,7 +241,8 @@ function loadModels() {
     let planetAttrs = planetsAttrs[key];
 
     loader.load(planetAttrs.src, function (gltf) {
-      const model = gltf.scene;
+      const baseModel = gltf.scene;
+      const model = baseModel.clone();
       model.scale.set(planetAttrs.scale, planetAttrs.scale, planetAttrs.scale);
 
       model.traverse(function (child) {
@@ -250,7 +260,7 @@ function loadModels() {
       mixers.push(mixer);
 
       planetObjects[planetAttrs.name] = {
-        model: model,
+        model: baseModel,
         path: modelPath,
         fraction: planetAttrs.pathFraction,
       };
@@ -348,7 +358,8 @@ function initializeCamera() {
   camera.lookAt(
     new THREE.Vector3(
       perspectiveAttrs.initial.lookAt.x,
-      perspectiveAttrs.initial.lookAt.y + perspectiveAttrs.followRocket.additionalY * 0.5,
+      perspectiveAttrs.initial.lookAt.y +
+        perspectiveAttrs.followRocket.additionalY * 0.5,
       perspectiveAttrs.initial.lookAt.z
     )
   );
@@ -386,65 +397,79 @@ function removeModelFromScene(model) {
 }
 
 function updateRocket() {
-  const nextPosition = paths[rocketIndex].getPoint(rocketFraction);
-  const tangent = paths[rocketIndex].getTangent(rocketFraction);
+  if (rocket !== undefined) {
+    const nextPosition = paths[rocketIndex].getPoint(rocketFraction);
+    const tangent = paths[rocketIndex].getTangent(rocketFraction);
 
-  var newX = nextPosition.x;
-  var newY = nextPosition.y;
-  var newZ = nextPosition.z;
+    var newX = nextPosition.x;
+    var newY = nextPosition.y;
+    var newZ = nextPosition.z;
 
-  if (isRocketMove) {
-    rocketMovement += dRocketMovement;
-    if (rocketMovement >= 1) {
-      rocketMovement = 0;
-      isRocketMove = false;
-      rocketIndexBefore = rocketIndex;
+    if (isRocketMove) {
+      rocketMovement += dRocketMovement;
+      if (rocketMovement >= 1) {
+        rocketMovement = 0;
+        isRocketMove = false;
+        rocketIndexBefore = rocketIndex;
+      }
+
+      const currentPosition = paths[rocketIndexBefore].getPoint(rocketFraction);
+      newX = interpolate(
+        currentPosition.x,
+        nextPosition.x,
+        ease(rocketMovement)
+      );
+      newY = interpolate(
+        currentPosition.y,
+        nextPosition.y,
+        ease(rocketMovement)
+      );
+      newZ = interpolate(
+        currentPosition.z,
+        nextPosition.z,
+        ease(rocketMovement)
+      );
+    }
+    const newPosition = new THREE.Vector3(newX, newY, newZ);
+
+    rocket.position.copy(newPosition);
+
+    rocketAxis.crossVectors(rocketDir, tangent).normalize();
+    const radians = Math.acos(rocketDir.dot(tangent));
+    rocket.quaternion.setFromAxisAngle(rocketAxis, radians);
+
+    cameraFraction = rocketFraction - perspectiveAttrs.followRocket.subtraction;
+    if (cameraFraction < 0) {
+      cameraFraction += 1;
     }
 
-    const currentPosition = paths[rocketIndexBefore].getPoint(rocketFraction);
-    newX = interpolate(currentPosition.x, nextPosition.x, ease(rocketMovement));
-    newY = interpolate(currentPosition.y, nextPosition.y, ease(rocketMovement));
-    newZ = interpolate(currentPosition.z, nextPosition.z, ease(rocketMovement));
-  }
-  const newPosition = new THREE.Vector3(newX, newY, newZ);
+    camera.lookAt(
+      new THREE.Vector3(
+        newPosition.x,
+        newPosition.y + perspectiveAttrs.followRocket.additionalY * 0.5,
+        newPosition.z
+      )
+    );
+    if (perspectiveAttrs.followRocket.enabled) {
+      const newCameraPosition = paths[cameraIndex].getPoint(cameraFraction);
+      camera.position.copy(newCameraPosition);
+      camera.position.y += perspectiveAttrs.followRocket.additionalY;
+    }
 
-  rocket.position.copy(newPosition);
+    rocketFraction += rocketAttrs.movement.speed;
+    if (rocketFraction > 1) {
+      rocketFraction = 0;
+    }
 
-  rocketAxis.crossVectors(rocketDir, tangent).normalize();
-  const radians = Math.acos(rocketDir.dot(tangent));
-  rocket.quaternion.setFromAxisAngle(rocketAxis, radians);
+    for (var key in planetObjects) {
+      let planet = planetObjects[key];
+      const newPlanetPosition = planet.path.getPoint(planet.fraction);
+      planet.model.position.copy(newPlanetPosition);
 
-  cameraFraction = rocketFraction - perspectiveAttrs.followRocket.subtraction;
-  if (cameraFraction < 0) {
-    cameraFraction += 1;
-  }
-
-  camera.lookAt(
-    new THREE.Vector3(
-      newPosition.x,
-      newPosition.y + perspectiveAttrs.followRocket.additionalY * 0.5,
-      newPosition.z
-    )
-  );
-  if (perspectiveAttrs.followRocket.enabled) {
-    const newCameraPosition = paths[cameraIndex].getPoint(cameraFraction);
-    camera.position.copy(newCameraPosition);
-    camera.position.y += perspectiveAttrs.followRocket.additionalY;
-  }
-
-  rocketFraction += rocketAttrs.movement.speed;
-  if (rocketFraction > 1) {
-    rocketFraction = 0;
-  }
-
-  for (var key in planetObjects) {
-    let planet = planetObjects[key];
-    const newPlanetPosition = planet.path.getPoint(planet.fraction);
-    planet.model.position.copy(newPlanetPosition);
-
-    planet.fraction += planetsAttrs[key].speed;
-    if (planet.fraction > 1) {
-      planet.fraction = 0;
+      planet.fraction += planetsAttrs[key].speed;
+      if (planet.fraction > 1) {
+        planet.fraction = 0;
+      }
     }
   }
 }
@@ -456,7 +481,11 @@ function updateObstaclesExsistence(objects, type = "") {
 
     if (
       object.index === rocketIndex &&
-      valueInside(object.fraction, cameraFraction, rocketFraction)
+      valueInside(
+        object.fraction,
+        rocketFraction - rocketAttrs.movement.speed,
+        rocketFraction + rocketAttrs.movement.speed
+      )
     ) {
       indices.push(key);
 
@@ -568,31 +597,96 @@ function putPlanet() {
       let model = planet.model.clone();
       let pathIndex;
 
-      if (planetsAttrs[key].scale < rocketAttrs.scale) {
+      if (planetsAttrs[key].pathScale < rocketAttrs.path.scale) {
         pathIndex = paths.length - 1;
       } else {
         pathIndex = 0;
       }
 
       let planetPosition = paths[pathIndex].getPoint(planet.fraction);
-      model.position.copy(planetPosition);
-      model.scale.set(planetsAttrs[key].mini.scale);
+      model.position.copy(
+        new THREE.Vector3(
+          planetPosition.x,
+          planetPosition.y + planetsAttrs[key].mini.offsetY,
+          planetPosition.z
+        )
+      );
+      model.scale.set(
+        planetsAttrs[key].mini.scale,
+        planetsAttrs[key].mini.scale,
+        planetsAttrs[key].mini.scale
+      );
 
-      planetModel = model;
+      planetObject = {
+        model: model,
+        fraction: planet.fraction,
+        index: pathIndex,
+        name: key,
+      };
+
       isTherePlanet = true;
 
-      scene.add(planetModel);
-
-      console.log(`new planet ${key}`);
+      scene.add(planetObject.model);
 
       break;
     } else {
       index--;
     }
   }
+}
 
-  console.log("put planet");
-  console.log(index);
+function removePlanet() {
+  removeModelFromScene(planetObject.model);
+
+  isTherePlanet = false;
+  planetObject.model = null;
+  planetCounter = gameAttrs.planet.fractionCounter;
+  idlePlanetCounter = planetCounter;
+}
+
+function updatePlanet() {
+  if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
+    if (
+      gamePoint !== 0 &&
+      gamePoint % gameAttrs.planet.point === 0 &&
+      !isTherePlanet &&
+      idlePlanetCounter <= 0
+    ) {
+      putPlanet();
+    } else {
+      if (isTherePlanet) {
+        planetCounter -= rocketAttrs.movement.speed;
+
+        if (planetCounter <= 0) {
+          removePlanet();
+        }
+
+        btnPlanetStatus.style.visibility = "visible";
+
+        if (
+          planetObject.index === rocketIndex &&
+          valueInside(
+            planetObject.fraction,
+            rocketFraction - rocketAttrs.movement.speed,
+            rocketFraction + rocketAttrs.movement.speed
+          )
+        ) {
+          modal.style.display = "block";
+          modalPlanetName.innerHTML = `You will visit ${planetObject.name.toUpperCase()}`;
+          modalBtnShow.href = `./../detail/${planetObject.name}/index.html`;
+          
+          isGameUpdate = false;
+        }
+      } else {
+        btnPlanetStatus.style.visibility = "hidden";
+        idlePlanetCounter -= rocketAttrs.movement.speed;
+
+        if (idlePlanetCounter <= 0) {
+          idlePlanetCounter = 0;
+        }
+      }
+    }
+  }
 }
 
 function updateObjects() {
@@ -611,22 +705,12 @@ function updateObjects() {
     mixer.update(deltaSec);
   });
 
-  if (rocket !== undefined) {
+  if (isGameUpdate) {
     updateRocket();
-  }
 
-  updateObstacle();
+    updateObstacle();
 
-  if (
-    gamePoint !== 0 &&
-    gamePoint % gameAttrs.planetPoint === 0 &&
-    !isTherePlanet
-  ) {
-    putPlanet();
-  } else {
-    if (isTherePlanet) {
-      planetCounter -= rocketAttrs.movement.speed;
-    }
+    updatePlanet();
   }
 }
 

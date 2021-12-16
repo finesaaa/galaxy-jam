@@ -98,7 +98,7 @@ const rocketAttrs = {
     scaleAddition: 0.003,
   },
   movement: {
-    speed: 0,
+    speed: rocketSpeed,
     delta: rocketSpeed * (100 + (1000 * (baseRocketSpeed - rocketSpeed))),
   },
 };
@@ -238,5 +238,8 @@ const gameAttrs = {
   pointFraction: 0.15,
   additionalPointFraction: 0.1,
   asteroidMux: 1.3,
-  planetPoint: 2,
+  planet: {
+    point: 2,
+    fractionCounter: 1,
+  },
 };
