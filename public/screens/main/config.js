@@ -245,15 +245,15 @@ const gameAttrs = {
   rocket: {
     limit: {
       level1: {
-        point: 10,
+        point: 5,
         speed: 0.0001,
       },
       level2: {
-        point: 30,
+        point: 10,
         speed: 0.00025,
       },
       level3: {
-        limit: 60,
+        limit: 25,
         speed: 0.0005,
       },
     },
