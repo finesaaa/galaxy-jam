@@ -374,6 +374,16 @@ function initializeWorld() {
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
 
+  const audioLoader = new THREE.AudioLoader();
+  const listener = new THREE.AudioListener();
+  const sound = new THREE.Audio( listener );
+
+  audioLoader.load( './../../assets/sounds/main.mp3', function( buffer ) {
+    sound.setBuffer( buffer );
+    sound.setLoop( true );
+    sound.play();
+  });
+
   clock = new THREE.Clock();
   loader = new GLTFLoader();
 
