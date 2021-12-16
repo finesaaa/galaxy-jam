@@ -48,24 +48,28 @@ var asteroidObjects = {};
 var asteroidObjectNum = 0;
 
 function onKeydown(event) {
-  if (event.keyCode == 65 || event.keyCode == 97) {
+  if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
     // A atau a
     if (rocketIndex - 1 >= 0 && !isRocketMove) {
       rocketIndexBefore = rocketIndex;
       isRocketMove = true;
       rocketIndex -= 1;
     }
-  } else if (event.keyCode == 68 || event.keyCode == 100) {
+  } else if (event.keyCode == 68 || event.keyCode == 100 || event.keyCode == 39) {
     // D atau d
     if (rocketIndex + 1 < paths.length && !isRocketMove) {
       rocketIndexBefore = rocketIndex;
       isRocketMove = true;
       rocketIndex += 1;
     }
-  } else if (event.keyCode == 87 || event.keyCode == 119) {
+  } else if (event.keyCode == 87 || event.keyCode == 119 || event.keyCode == 38) {
     // W atau w
-  } else if (event.keyCode == 83 || event.keyCode == 115) {
+    rocketAttrs.movement.speed = rocketSpeed 
+    isRocketMove = true
+  } else if (event.keyCode == 83 || event.keyCode == 115 || event.keyCode == 40) {
     // S atau s
+    rocketAttrs.movement.speed = 0
+    isRocketMove = false
   }
 }
 document.addEventListener("keydown", onKeydown, false);
