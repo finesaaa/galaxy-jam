@@ -398,6 +398,17 @@ function removeModelFromScene(model) {
 
 function updateRocket() {
   if (rocket !== undefined) {
+    if (gamePoint <= gameAttrs.rocket.limit.level1.point) {
+      rocketAttrs.movement.speed = gameAttrs.rocket.limit.level1.speed;
+    } else if (
+      gamePoint > gameAttrs.rocket.limit.level2.point &&
+      gamePoint <= gameAttrs.rocket.limit.level3.point
+    ) {
+      rocketAttrs.movement.speed = gameAttrs.rocket.limit.level2.speed;
+    } else if (gamePoint > gameAttrs.rocket.limit.level3.point) {
+      rocketAttrs.movement.speed = gameAttrs.rocket.limit.level3.speed;
+    }
+
     const nextPosition = paths[rocketIndex].getPoint(rocketFraction);
     const tangent = paths[rocketIndex].getTangent(rocketFraction);
 
@@ -489,8 +500,8 @@ function updateObstaclesExsistence(objects, type = "") {
     ) {
       indices.push(key);
 
-      gamePoint++;
       if (type === "point") {
+        gamePoint++;
         gamePointElement.innerHTML = `Point ${gamePoint}`;
       }
     } else if (object.fraction < cameraFraction) {
@@ -671,10 +682,13 @@ function updatePlanet() {
             rocketFraction + rocketAttrs.movement.speed
           )
         ) {
+          gamePoint += 5;
+          gamePointElement.innerHTML = `Point ${gamePoint}`;
+
           modal.style.display = "block";
           modalPlanetName.innerHTML = `You will visit ${planetObject.name.toUpperCase()}`;
           modalBtnShow.href = `./../detail/${planetObject.name}/index.html`;
-          
+
           isGameUpdate = false;
         }
       } else {
