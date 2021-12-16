@@ -52,7 +52,7 @@ const objectsAttrs = {
   planetAttrs: {
     name: "mars",
     src: "./../../../assets/models/mars/scene.gltf",
-    scale: 0.012,
+    scale: 0.014,
     initailPosition: {
       x: 0,
       y: 0,
