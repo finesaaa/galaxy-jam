@@ -59,6 +59,8 @@ var modalPlanetName = document.getElementById("modal-planet-name");
 var modalClose = document.getElementsByClassName("close")[0];
 var modalBtnShow = document.getElementById("detail-btn");
 
+var modalGameOver = document.getElementById("game-over-modal");
+
 var btnPlanetStatus = document.getElementById("main-btn");
 
 var isGameUpdate = true;
@@ -513,6 +515,8 @@ function updateObstaclesExsistence(objects, type = "") {
       if (type === "point") {
         gamePoint++;
         gamePointElement.innerHTML = `Point ${gamePoint}`;
+      } else if (type === "asteroid") {
+        modalGameOver.style.display = "block";
       }
     } else if (object.fraction < cameraFraction) {
       indices.push(key);
