@@ -7,7 +7,7 @@
 - 05111940000005  -  Muh. Nur Fajrin Amiruddin
 - 05111940000138  -  Achmad Akbar Irwanda
 
-## Guidance to run using nodejs (root of the project):
+## Guidance to run using nodejs (root of the project) :
 - `npm install`
 - `npm start`
 > The server will be served at http://localhost:3000  

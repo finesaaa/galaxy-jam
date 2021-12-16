@@ -14,12 +14,44 @@
       <div class="title-container">
         <div class="title">
           <h1 id="game-point">Point 0</h1>
+          <button class="btn" id="main-btn">👋 Check Out This Planet</button>
         </div>
       </div>
     </div>
 
+    <div id="main-modal" class="modal modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h1>How is Your Journey ?</h1>
+        <div>Our solar system consists of our star, the Sun, and everything bound to it by gravity – the planets Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.</div>
+        <div style="margin-top: 16px; margin-bottom: 12px;">
+          <a class="btn no-underline" href="/public/screens/detail/earth/index.html" target="_blank" id="detail-btn">🚀 I want to explore this planet</a>
+        </div>
+      </div>
+
+    </div>
+
     <canvas class="webgl"></canvas>
 
+    <script>
+      var modal = document.getElementById("main-modal");
+      var btn = document.getElementById("main-btn");
+      var closeSpan = document.getElementsByClassName("close")[0];
+
+      btn.onclick = function() {
+        modal.style.display = "block";
+      }
+
+      closeSpan.onclick = function() {
+        modal.style.display = "none";
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+    </script>
     <script type="module" src="./index.js"></script>
     <script type="text/javascript" src="./config.js"></script>
   </body>
