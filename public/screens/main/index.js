@@ -49,7 +49,23 @@ var gamePointElement = document.getElementById("game-point");
 
 var isTherePlanet = false;
 var planetModel;
+var planetFraction;
 var planetCounter = gameAttrs.planet.fractionCounter;
+var idlePlanetCounter = 0;
+
+var modal = document.getElementById("main-modal");
+var btn = document.getElementById("main-btn");
+var closeSpan = document.getElementsByClassName("close")[0];
+
+closeSpan.onclick = function () {
+  modal.style.display = "none";
+};
+
+window.onclick = function (event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+};
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
@@ -442,7 +458,11 @@ function updateObstaclesExsistence(objects, type = "") {
 
     if (
       object.index === rocketIndex &&
-      valueInside(object.fraction, cameraFraction, rocketFraction)
+      valueInside(
+        object.fraction,
+        rocketFraction - rocketAttrs.movement.speed,
+        rocketFraction + rocketAttrs.movement.speed
+      )
     ) {
       indices.push(key);
 
@@ -574,6 +594,7 @@ function putPlanet() {
         planetsAttrs[key].mini.scale
       );
 
+      planetFraction = planet.fraction;
       planetModel = model;
       isTherePlanet = true;
 
@@ -582,6 +603,51 @@ function putPlanet() {
       break;
     } else {
       index--;
+    }
+  }
+}
+
+function updatePlanet() {
+  if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
+    if (
+      gamePoint !== 0 &&
+      gamePoint % gameAttrs.planet.point === 0 &&
+      !isTherePlanet &&
+      idlePlanetCounter <= 0
+    ) {
+      putPlanet();
+    } else {
+      if (isTherePlanet) {
+        planetCounter -= rocketAttrs.movement.speed;
+
+        if (planetCounter <= 0) {
+          removeModelFromScene(planetModel);
+
+          isTherePlanet = false;
+          planetModel = null;
+          planetCounter = gameAttrs.planet.fractionCounter;
+          idlePlanetCounter = planetCounter;
+        }
+
+        btn.style.visibility = "visible";
+
+        if (
+          valueInside(
+            planetFraction,
+            rocketFraction - rocketAttrs.movement.speed,
+            rocketFraction + rocketAttrs.movement.speed
+          )
+        ) {
+          modal.style.display = "block";
+        }
+      } else {
+        btn.style.visibility = "hidden";
+        idlePlanetCounter -= rocketAttrs.movement.speed;
+
+        if (idlePlanetCounter <= 0) {
+          idlePlanetCounter = 0;
+        }
+      }
     }
   }
 }
@@ -608,25 +674,7 @@ function updateObjects() {
 
   updateObstacle();
 
-  if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
-    if (
-      gamePoint !== 0 &&
-      gamePoint % gameAttrs.planet.point === 0 &&
-      !isTherePlanet
-    ) {
-      putPlanet();
-    } else {
-      if (isTherePlanet) {
-        planetCounter -= rocketAttrs.movement.speed;
-
-        if (planetCounter <= 0) {
-          removeModelFromScene(planetModel);
-          isTherePlanet = false;
-          planetCounter = gameAttrs.planet.fractionCounter;
-        }
-      }
-    }
-  }
+  updatePlanet();
 }
 
 function render() {
