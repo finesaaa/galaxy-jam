@@ -36,7 +36,7 @@ function initializeLight() {
 function addStar(zPosition, scale = starAttrs.scale) {
   var geometry = new THREE.SphereGeometry(
     starAttrs.radius,
-    starAttrs.widthSegments,
+    starAttrs.widthSegnments,
     starAttrs.heightSegments
   );
   var material = new THREE.MeshBasicMaterial({
@@ -140,9 +140,9 @@ function updateObjects() {
     mixer.update(clock.getDelta());
   });
 
-  var venus = objectsModel[objectsAttrs.venusAttrs.name];
-  if (venus !== undefined) {
-    venus.rotation.y += objectsAttrs.venusAttrs.rotationSpeed;
+  var mercury = objectsModel[objectsAttrs.mercuryAttrs.name];
+  if (mercury !== undefined) {
+    mercury.rotation.y += objectsAttrs.mercuryAttrs.rotationSpeed;
   }
 }
 
