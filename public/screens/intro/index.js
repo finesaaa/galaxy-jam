@@ -47,6 +47,9 @@ var textMeshs = [];
 var buttonMesh;
 var boundingBoxButton = null;
 
+var gameModeBtn = document.getElementById("game-mode-btn");
+var educationModeBtn = document.getElementById("education-mode-btn");
+
 function addStar(zPosition, scale = starAttrs.scale) {
   var geometry = new THREE.SphereGeometry(
     starAttrs.radius,
@@ -112,8 +115,8 @@ function loadModels() {
   boundingBoxButton = new THREE.BoxHelper( buttonMesh, 0x00FFBD59 );
   boundingBoxButton.update();
 
-  scene.add(buttonMesh);
-  scene.add( boundingBoxButton ); 
+  // scene.add(buttonMesh);
+  // scene.add( boundingBoxButton ); 
 }
 
 function inializeObjects() {
@@ -144,7 +147,10 @@ function initializeWorld() {
 
   scene.add(camera);
 
-  renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector(".webgl"),
+    antialias: true,
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   document.body.appendChild(renderer.domElement);
@@ -183,6 +189,14 @@ function initializeWorld() {
   inializeObjects();
 }
 
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", onResize, false);
+
 var change = [];
 var speed = [];
 var doneDrawText = false;
@@ -210,9 +224,9 @@ function drawText()
         addition -= 1.0
         
       if (i > 0)
-        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 13.6, 550);
+        textMeshs[i].position.set(textMeshs[i-1].position.x + addition, 13.8, 550);
       else
-        textMeshs[i].position.set(-6.4, 13.6, 550);
+        textMeshs[i].position.set(-6.1, 13.8, 550);
       textMeshs[i].rotation.set(0, -0.2, 0);
       scene.add(textMeshs[i]);
     });
@@ -230,7 +244,7 @@ function drawText()
   }
 }
 
-function updateText()
+function updateIntro()
 {
   if (doneDrawText == false)
   {
@@ -247,6 +261,9 @@ function updateText()
     {
       buttonMesh.position.z = 500;
     }
+
+    gameModeBtn.style.visibility = "visible";
+    educationModeBtn.style.visibility = "visible";
   }
   if (textMeshs.length >= text.length)
   {
@@ -347,7 +364,7 @@ function render() {
     }
     else
     {
-      updateText();
+      updateIntro();
     }
 
     var clockDelta = clock.getDelta();
@@ -355,8 +372,8 @@ function render() {
     if (rocketActions != undefined) rocketActions.update(clockDelta);
     if (sunActions != undefined) sunActions.update(clockDelta);
 
-    if (Date.now() > cameraInitialTimestamp + cameraIntroTime + 6000)
-      childWindow = window.open(newTabUrl, "_self");
+    // if (Date.now() > cameraInitialTimestamp + cameraIntroTime + 6000)
+    //   childWindow = window.open(newTabUrl, "_self");
 
     if (movingDestinyX != null) {
       if (rocket.position.x != movingDestinyX) {
