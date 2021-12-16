@@ -59,11 +59,11 @@ function onResize() {
 window.addEventListener("resize", onResize, false);
 
 function initializeLight() {
-  const ambientlight = new THREE.AmbientLight(0xffffff, 0.2);
+  const ambientlight = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambientlight);
 
   const pointLight = new THREE.PointLight(0xffffff, 1);
-  pointLight.position.set(5, 3, 5);
+  pointLight.position.set(5, 3, 4);
   scene.add(pointLight);
 
   const Helper = new THREE.PointLightHelper(pointLight);
