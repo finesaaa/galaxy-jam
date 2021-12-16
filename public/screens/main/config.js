@@ -76,7 +76,7 @@ const pathLineAttrs = {
 };
 
 const baseRocketSpeed = 0.0005;
-const rocketSpeed = 0.0005;
+const rocketSpeed = 0.0002;
 const rocketAttrs = {
   src: "./../../assets/models/rocket-astro/scene.gltf",
   scale: 0.001,
@@ -105,6 +105,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 7.5,
     pathFraction: 0.04,
     speed: 0,
+    miniScale: 0.0001,
   },
   venus: {
     name: "venus",
@@ -113,6 +114,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.1,
     speed: 0,
+    miniScale: 0.0001,
   },
   earth: {
     name: "earth",
@@ -121,6 +123,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.2,
     speed: 0,
+    miniScale: 0.0001,
   },
   mars: {
     name: "mars",
@@ -129,6 +132,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 16,
     pathFraction: 0.28,
     speed: 0,
+    miniScale: 0.0001,
   },
   jupiter: {
     name: "jupiter",
@@ -137,6 +141,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 120,
     pathFraction: 0.45,
     speed: 0,
+    miniScale: 0.0001,
   },
   saturn: {
     name: "saturn",
@@ -145,6 +150,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 85,
     pathFraction: 0.75,
     speed: 0,
+    miniScale: 0.0001,
   },
   uranus: {
     name: "uranus",
@@ -153,6 +159,7 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale + rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.85,
     speed: 0,
+    miniScale: 0.0001,
   },
   neptune: {
     name: "neptune",
@@ -161,15 +168,19 @@ const planetsAttrs = {
     pathScale: rocketAttrs.path.scale - rocketAttrs.path.scaleAddition * 22,
     pathFraction: 0.94,
     speed: 0,
+    miniScale: 0.0001,
   },
 };
 
 const pointAttrs = {
   name: "star",
   src: "./../../assets/models/star/scene.gltf",
-  scale: 0.005,
+  scale: 0.0035,
   offset: {
     y: -0.02,
+  },
+  rotation: {
+    speed: Math.PI / 100,
   }
 };
 
@@ -177,7 +188,7 @@ const asteroidsAttrs = [
   {
     name: "asteroid",
     src: "./../../assets/models/asteroid/scene.gltf",
-    scale: 0.16,
+    scale: 0.12,
     offset: {
       y: 0.12,
     }
@@ -185,7 +196,7 @@ const asteroidsAttrs = [
   {
     name: "metal-asteroid",
     src: "./../../assets/models/metal-asteroid/scene.gltf",
-    scale: 0.004,
+    scale: 0.003,
     offset: {
       y: 0.13,
     }
@@ -194,6 +205,7 @@ const asteroidsAttrs = [
 
 const gameAttrs = {
   pointFraction: 0.15,
-  additionalPointFraction: 0.15,
-  asteroidMux: 1.5,
+  additionalPointFraction: 0.1,
+  asteroidMux: 1.3,
+  planetPoint: 4,
 };

@@ -1,5 +1,4 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 
 var scene;
@@ -27,9 +26,7 @@ var dRocketMovement = rocketAttrs.movement.delta;
 var isRocketMove = false;
 var rocketIndexBefore = 0;
 
-var planetsModel = {};
-var planetsPath = {};
-var planetsFraction = {};
+var planetObjects = {};
 
 var stars = [];
 
@@ -46,6 +43,9 @@ var asteroidCounter = gameAttrs.pointFraction * gameAttrs.asteroidMux;
 
 var asteroidObjects = {};
 var asteroidObjectNum = 0;
+
+var gamePoint = 0;
+var gamePointElement = document.getElementById('game-point');
 
 function onKeydown(event) {
   if (event.keyCode == 65 || event.keyCode == 97) {
@@ -92,6 +92,10 @@ function interpolate(a, b, t) {
 
 function ease(t) {
   return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+function valueInside(a, min, max) {
+  return a >= min && a <= max;
 }
 
 function createPath(scale) {
@@ -225,9 +229,11 @@ function loadModels() {
       mixer.clipAction(gltf.animations[0]).play();
       mixers.push(mixer);
 
-      planetsModel[planetAttrs.name] = model;
-      planetsPath[planetAttrs.name] = modelPath;
-      planetsFraction[planetAttrs.name] = planetAttrs.pathFraction;
+      planetObjects[planetAttrs.name] = {
+        model: model,
+        path: modelPath,
+        fraction: planetAttrs.pathFraction,
+      };
 
       scene.add(model);
     });
@@ -323,8 +329,11 @@ function initializeCamera() {
 function initializeWorld() {
   scene = new THREE.Scene();
   renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector(".webgl"),
+    antialias: true,
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
 
   clock = new THREE.Clock();
   loader = new GLTFLoader();
@@ -367,8 +376,7 @@ function updateRocket() {
   const radians = Math.acos(rocketDir.dot(tangent));
   rocket.quaternion.setFromAxisAngle(rocketAxis, radians);
 
-  cameraFraction =
-    rocketFraction - perspectiveAttrs.followRocket.subtraction;
+  cameraFraction = rocketFraction - perspectiveAttrs.followRocket.subtraction;
   if (cameraFraction < 0) {
     cameraFraction += 1;
   }
@@ -391,26 +399,43 @@ function updateRocket() {
     rocketFraction = 0;
   }
 
-  for (var key in planetsModel) {
-    const newPlanetPosition = planetsPath[key].getPoint(planetsFraction[key]);
-    planetsModel[key].position.copy(newPlanetPosition);
+  for (var key in planetObjects) {
+    let planet = planetObjects[key];
+    const newPlanetPosition = planet.path.getPoint(planet.fraction);
+    planet.model.position.copy(newPlanetPosition);
 
-    planetsFraction[key] += planetsAttrs[key].speed;
-    if (planetsFraction[key] > 1) {
-      planetsFraction[key] = 0;
+    planet.fraction += planetsAttrs[key].speed;
+    if (planet.fraction > 1) {
+      planet.fraction = 0;
     }
   }
 }
 
-function updateObstaclesExsistance(objects) {
+function updateObstaclesExsistence(objects, type = "") {
   let indices = [];
   for (var key in objects) {
-    if (objects[key].fraction < cameraFraction) {
+    let object = objects[key];
+
+    if (
+      object.index === rocketIndex &&
+      valueInside(
+        object.fraction,
+        cameraFraction,
+        rocketFraction
+      )
+    ) {
+      indices.push(key);
+
+      gamePoint++;
+      if (type === "point") {
+        gamePointElement.innerHTML = `Point ${gamePoint}`
+      }
+    } else if (object.fraction < cameraFraction) {
       indices.push(key);
     }
   }
 
-  indices.forEach(function(indexName) {
+  indices.forEach(function (indexName) {
     scene.remove(objects[indexName].model);
     objects[indexName].model.traverse(function (child) {
       if (child.isMesh) {
@@ -426,6 +451,8 @@ function updateObstaclesExsistance(objects) {
 function updateObstacle() {
   pointCounter -= rocketAttrs.movement.speed;
   asteroidCounter -= rocketAttrs.movement.speed;
+
+  let pointIndex = -1;
 
   if (pointCounter <= 0 && pointModel !== undefined) {
     pointCounter = gameAttrs.pointFraction;
@@ -444,14 +471,17 @@ function updateObstacle() {
       position.y + pointAttrs.offset.y,
       position.z
     );
-    
+
     pointObjectNum += 1;
     pointObjects[`star ${pointObjectNum}`] = {
       model: model,
       fraction: fraction,
+      index: index,
     };
 
     scene.add(model);
+
+    pointIndex = index;
   }
 
   if (asteroidCounter <= 0 && asteroids.length !== 0) {
@@ -463,6 +493,15 @@ function updateObstacle() {
     }
 
     let index = getRandomInt(paths.length);
+
+    if (pointIndex !== -1 && index === pointIndex) {
+      if (index === 0) {
+        index += 1;
+      } else {
+        index -= 1;
+      }
+    }
+
     let position = paths[index].getPoint(fraction);
     let asteroidIndex = getRandomInt(asteroids.length);
     let model = asteroids[asteroidIndex].model.clone();
@@ -470,20 +509,37 @@ function updateObstacle() {
     model.position.set(
       position.x,
       position.y + asteroids[asteroidIndex].offsetY,
-      position.z,
+      position.z
     );
 
     asteroidObjectNum += 1;
     asteroidObjects[`asteroid ${asteroidObjectNum}`] = {
       model: model,
       fraction: fraction,
-    }
+      index: index,
+    };
 
     scene.add(model);
   }
 
-  updateObstaclesExsistance(pointObjects);
-  updateObstaclesExsistance(asteroidObjects);
+  updateObstaclesExsistence(pointObjects, "point");
+  updateObstaclesExsistence(asteroidObjects, "asteroid");
+
+  for (var key in pointObjects) {
+    let object = pointObjects[key];
+
+    object.model.rotation.y += pointAttrs.rotation.speed;
+  }
+}
+
+function putPlanet() {
+  let index = getRandomInt(planetObjects.length);
+
+  for (var key in planetObjects) {
+    let planet = planetObjects[key];
+
+    
+  }
 }
 
 function updateObjects() {
@@ -507,6 +563,10 @@ function updateObjects() {
   }
 
   updateObstacle();
+
+  if (gamePoint % gameAttrs.planetPoint === 0) {
+    putPlanet();
+  }
 }
 
 function render() {
