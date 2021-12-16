@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Jam</title>
+    <link rel="stylesheet" href="./../style.css">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="title-container">
+        <div class="title">
+          <h1 id="game-point">Point 0</h1>
+          <button class="btn" style="visibility: hidden; cursor: default;" id="main-btn">🪐 There is a Planet</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="main-modal" class="modal modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h1>How is Your Journey ?</h1>
+        <div>Our solar system consists of our star, the Sun, and everything
+          bound to it by gravity – the planets Mercury, Venus, Earth, Mars,
+          Jupiter, Saturn, Uranus, and Neptune.</div>
+        <p id="modal-planet-name">You will visit Neptune</p>
+        <div style="margin-top: 16px; margin-bottom: 12px;">
+          <a class="btn no-underline"
+            href="#" target="_blank"
+            id="detail-btn">🚀 I want to explore this planet</a>
+        </div>
+      </div>
+    </div>
+
+    <canvas class="webgl"></canvas>
+
+    <script type="module" src="./index.js"></script>
+    <script type="text/javascript" src="./../config.js"></script>
+  </body>
+
+</html>
