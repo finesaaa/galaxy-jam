@@ -239,6 +239,28 @@ function loadModels() {
     scene.add(rocket);
   });
 
+  loader.load(sunAttrs.src, function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(sunAttrs.scale, sunAttrs.scale, sunAttrs.scale);
+    model.position.set(
+      sunAttrs.initailPosition.x,
+      sunAttrs.initailPosition.y,
+      sunAttrs.initailPosition.z
+    );
+
+    model.traverse(function (child) {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+
+    let mixer = new THREE.AnimationMixer(model);
+    mixer.clipAction(gltf.animations[0]).play();
+    mixers.push(mixer);
+
+    scene.add(model);
+  });
+
   for (var key in planetsAttrs) {
     let planetAttrs = planetsAttrs[key];
 

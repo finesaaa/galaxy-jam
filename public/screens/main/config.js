@@ -82,7 +82,7 @@ const pathLineAttrs = {
   isDrawLines: true,
 };
 
-var rocketSpeed = 0.0002;
+var rocketSpeed = 0.0001;
 const baseRocketSpeed = 0.0005;
 const rocketAttrs = {
   src: "./../../../assets/models/rocket-astro/scene.gltf",
@@ -100,6 +100,16 @@ const rocketAttrs = {
   movement: {
     speed: rocketSpeed,
     delta: rocketSpeed * (100 + (1000 * (baseRocketSpeed - rocketSpeed))),
+  },
+};
+
+const sunAttrs = {
+  src: "./../../../assets/models/sun/scene.gltf",
+  scale: 35,
+  initailPosition: {
+    x: 0,
+    y: 0,
+    z: 0,
   },
 };
 

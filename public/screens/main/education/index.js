@@ -32,24 +32,12 @@ var stars = [];
 
 var mixers = [];
 
-var gamePoint = 0;
-var gamePointElement = document.getElementById("game-point");
-
-var isTherePlanet = false;
-
-var planetObject = {};
-
-var planetCounter = gameAttrs.planet.fractionCounter;
-var idlePlanetCounter = 0;
+var miniPlanetObjects = [];
 
 var modal = document.getElementById("main-modal");
 var modalPlanetName = document.getElementById("modal-planet-name");
 var modalClose = document.getElementsByClassName("close")[0];
 var modalBtnShow = document.getElementById("detail-btn");
-
-var btnPlanetStatus = document.getElementById("main-btn");
-
-var isGameUpdate = true;
 
 modalClose.onclick = function () {
   modal.style.display = "none";
@@ -83,9 +71,38 @@ function onKeydown(event) {
       isRocketMove = true;
       rocketIndex += 1;
     }
+  } else if (
+    event.keyCode == 87 ||
+    event.keyCode == 119 ||
+    event.keyCode == 38
+  ) {
+    // W atau w
+    rocketAttrs.movement.speed = rocketSpeed;
+  } else if (
+    event.keyCode == 83 ||
+    event.keyCode == 115 ||
+    event.keyCode == 40
+  ) {
+    // S atau s
+    rocketAttrs.movement.speed = -rocketSpeed;
   }
 }
 document.addEventListener("keydown", onKeydown, false);
+
+function onKeyup(event) {
+  if (event.keyCode == 87 || event.keyCode == 119 || event.keyCode == 38) {
+    // W atau w
+    rocketAttrs.movement.speed = 0;
+  } else if (
+    event.keyCode == 83 ||
+    event.keyCode == 115 ||
+    event.keyCode == 40
+  ) {
+    // S atau s
+    rocketAttrs.movement.speed = 0;
+  }
+}
+document.addEventListener("keyup", onKeyup, false);
 
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -200,6 +217,43 @@ function addStar(zPosition, scale = starAttrs.scale) {
   stars.push(sphere);
 }
 
+function putPlanets() {
+  for (var key in planetObjects) {
+    let planet = planetObjects[key];
+    let model = planet.model.clone();
+    let pathIndex;
+
+    if (planetsAttrs[key].pathScale < rocketAttrs.path.scale) {
+      pathIndex = paths.length - 1;
+    } else {
+      pathIndex = 0;
+    }
+
+    let planetPosition = paths[pathIndex].getPoint(planet.fraction);
+    model.position.copy(
+      new THREE.Vector3(
+        planetPosition.x,
+        planetPosition.y + planetsAttrs[key].mini.offsetY,
+        planetPosition.z
+      )
+    );
+    model.scale.set(
+      planetsAttrs[key].mini.scale,
+      planetsAttrs[key].mini.scale,
+      planetsAttrs[key].mini.scale
+    );
+
+    miniPlanetObjects.push({
+      model: model,
+      fraction: planet.fraction,
+      index: pathIndex,
+      name: key,
+    });
+
+    scene.add(model);
+  }
+}
+
 function loadModels() {
   loader.load(rocketAttrs.src, function (gltf) {
     const model = gltf.scene;
@@ -223,6 +277,28 @@ function loadModels() {
     rocket = model;
 
     scene.add(rocket);
+  });
+
+  loader.load(sunAttrs.src, function (gltf) {
+    const model = gltf.scene;
+    model.scale.set(sunAttrs.scale, sunAttrs.scale, sunAttrs.scale);
+    model.position.set(
+      sunAttrs.initailPosition.x,
+      sunAttrs.initailPosition.y,
+      sunAttrs.initailPosition.z
+    );
+
+    model.traverse(function (child) {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+
+    let mixer = new THREE.AnimationMixer(model);
+    mixer.clipAction(gltf.animations[0]).play();
+    mixers.push(mixer);
+
+    scene.add(model);
   });
 
   for (var key in planetsAttrs) {
@@ -254,6 +330,12 @@ function loadModels() {
       };
 
       scene.add(model);
+
+      if (
+        Object.keys(planetObjects).length === Object.keys(planetsAttrs).length
+      ) {
+        putPlanets();
+      }
     });
   }
 }
@@ -277,6 +359,8 @@ function inializeObjects() {
   ) {
     addStar(z);
   }
+
+  rocketAttrs.movement.speed = 0;
 }
 
 function initializeLights() {
@@ -333,11 +417,11 @@ function initializeWorld() {
 
   const audioLoader = new THREE.AudioLoader();
   const listener = new THREE.AudioListener();
-  const sound = new THREE.Audio( listener );
+  const sound = new THREE.Audio(listener);
 
-  audioLoader.load( './../../assets/sounds/main.mp3', function( buffer ) {
-    sound.setBuffer( buffer );
-    sound.setLoop( true );
+  audioLoader.load("./../../assets/sounds/main.mp3", function (buffer) {
+    sound.setBuffer(buffer);
+    sound.setLoop(true);
     sound.play();
   });
 
@@ -353,29 +437,8 @@ function initializeWorld() {
   inializeObjects();
 }
 
-function removeModelFromScene(model) {
-  scene.remove(model);
-  model.traverse(function (child) {
-    if (child.isMesh) {
-      child.geometry.dispose();
-      child.material.dispose();
-    }
-  });
-}
-
 function updateRocket() {
   if (rocket !== undefined) {
-    if (gamePoint <= gameAttrs.rocket.limit.level1.point) {
-      rocketAttrs.movement.speed = gameAttrs.rocket.limit.level1.speed;
-    } else if (
-      gamePoint > gameAttrs.rocket.limit.level2.point &&
-      gamePoint <= gameAttrs.rocket.limit.level3.point
-    ) {
-      rocketAttrs.movement.speed = gameAttrs.rocket.limit.level2.speed;
-    } else if (gamePoint > gameAttrs.rocket.limit.level3.point) {
-      rocketAttrs.movement.speed = gameAttrs.rocket.limit.level3.speed;
-    }
-
     const nextPosition = paths[rocketIndex].getPoint(rocketFraction);
     const tangent = paths[rocketIndex].getTangent(rocketFraction);
 
@@ -436,113 +499,28 @@ function updateRocket() {
 
     rocketFraction += rocketAttrs.movement.speed;
     if (rocketFraction > 1) {
-      rocketFraction = 0;
+      rocketFraction -= 1;
+    } else if (rocketFraction < 0) {
+      rocketFraction += 1;
     }
   }
 }
 
-function putPlanet() {
-  let index = getRandomInt(Object.keys(planetObjects).length);
-
-  for (var key in planetObjects) {
-    if (index === 0) {
-      let planet = planetObjects[key];
-      let model = planet.model.clone();
-      let pathIndex;
-
-      if (planetsAttrs[key].pathScale < rocketAttrs.path.scale) {
-        pathIndex = paths.length - 1;
-      } else {
-        pathIndex = 0;
-      }
-
-      let planetPosition = paths[pathIndex].getPoint(planet.fraction);
-      model.position.copy(
-        new THREE.Vector3(
-          planetPosition.x,
-          planetPosition.y + planetsAttrs[key].mini.offsetY,
-          planetPosition.z
-        )
-      );
-      model.scale.set(
-        planetsAttrs[key].mini.scale,
-        planetsAttrs[key].mini.scale,
-        planetsAttrs[key].mini.scale
-      );
-
-      planetObject = {
-        model: model,
-        fraction: planet.fraction,
-        index: pathIndex,
-        name: key,
-      };
-
-      isTherePlanet = true;
-
-      scene.add(planetObject.model);
-
-      break;
-    } else {
-      index--;
-    }
-  }
-}
-
-function removePlanet() {
-  removeModelFromScene(planetObject.model);
-
-  isTherePlanet = false;
-  planetObject.model = null;
-  planetCounter = gameAttrs.planet.fractionCounter;
-  idlePlanetCounter = planetCounter;
-}
-
-function updatePlanet() {
-  if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
+function updatePlanets() {
+  miniPlanetObjects.forEach(function (planet) {
     if (
-      gamePoint !== 0 &&
-      gamePoint % gameAttrs.planet.point == 0 &&
-      !isTherePlanet &&
-      idlePlanetCounter <= 0
+      planet.index === rocketIndex &&
+      valueInside(
+        planet.fraction,
+        rocketFraction - rocketAttrs.movement.speed,
+        rocketFraction + rocketAttrs.movement.speed
+      )
     ) {
-      putPlanet();
-    } else {
-      if (isTherePlanet) {
-        planetCounter -= rocketAttrs.movement.speed;
-
-        if (planetCounter <= 0) {
-          removePlanet();
-        }
-
-        btnPlanetStatus.style.visibility = "visible";
-
-        if (
-          planetObject.index === rocketIndex &&
-          valueInside(
-            planetObject.fraction,
-            rocketFraction - rocketAttrs.movement.speed,
-            rocketFraction + rocketAttrs.movement.speed
-          )
-        ) {
-          gamePoint += 5;
-          gamePointElement.innerHTML = `Point ${gamePoint}`;
-
-          modal.style.display = "block";
-          modalPlanetName.innerHTML = `You will visit ${planetObject.name.toUpperCase()}`;
-          modalBtnShow.href = `./../detail/${planetObject.name}/index.html`;
-
-          isGameUpdate = false;
-        }
-      } else {
-        btnPlanetStatus.style.visibility = "hidden";
-        idlePlanetCounter -= rocketAttrs.movement.speed;
-
-        if (idlePlanetCounter <= 0) {
-          idlePlanetCounter = 0;
-        }
-      }
+      modal.style.display = "block";
+      modalPlanetName.innerHTML = `You will visit ${planet.name.toUpperCase()}`;
+      modalBtnShow.href = `./../../detail/${planet.name}/index.html`;
     }
-  }
+  });
 }
 
 function updateObjects() {
@@ -561,11 +539,9 @@ function updateObjects() {
     mixer.update(deltaSec);
   });
 
-  if (isGameUpdate) {
-    updateRocket();
+  updateRocket();
 
-    updatePlanet();
-  }
+  updatePlanets();
 }
 
 function render() {
