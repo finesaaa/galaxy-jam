@@ -7,8 +7,10 @@
 - 05111940000005  -  Muh. Nur Fajrin Amiruddin
 - 05111940000138  -  Achmad Akbar Irwanda
 
-## Guidance to run using nodejs (root of the project) :
-- `npm install`
-- `npm start`
-> The server will be served at http://localhost:3000  
-> prerequisites: node & npm.
+## Galaxy Jam
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/45300477/146508260-d12d533a-1210-4a49-8858-f47dcf7930eb.png">
+</p>
+<p align="center">
+  Space game and space education
+</p>
