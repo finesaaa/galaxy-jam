@@ -511,6 +511,8 @@ function updateRocket() {
   }
 }
 
+var soundGetPlanet = new Audio(soundAttrs.srcGetPlanet)
+
 function updatePlanets() {
   miniPlanetObjects.forEach(function (planet) {
     if (
@@ -521,6 +523,9 @@ function updatePlanets() {
         rocketFraction + rocketAttrs.movement.speed
       )
     ) {
+      soundGetPlanet.currentTime = 0;
+      soundGetPlanet.play();
+
       modalPopUp = true;
       rocketFraction += rocketAttrs.movement.speed;
       rocketAttrs.movement.speed = 0;
