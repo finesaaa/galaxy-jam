@@ -226,8 +226,8 @@ function initializeWorld() {
     spotLight.shadow.mapSize.height = 1024;
   }
   directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(0, 99, 0);
-  hemisphereLight = new THREE.HemisphereLight(0xfffbdb, 0x37474f, 1);
+  directionalLight.position.set(0, 50, 0);
+  hemisphereLight = new THREE.HemisphereLight(0xfffbdb, 0xfffffb, 1);
   hemisphereLight.position.y = 500;
   scene.add(directionalLight, hemisphereLight);
 
