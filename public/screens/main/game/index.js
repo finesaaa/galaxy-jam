@@ -701,7 +701,7 @@ function updatePlanet() {
 
           modal.style.display = "block";
           modalPlanetName.innerHTML = `You will visit ${planetObject.name.toUpperCase()}`;
-          modalBtnShow.href = `./../detail/${planetObject.name}/index.html`;
+          modalBtnShow.href = `./../../detail/${planetObject.name}/index.html`;
 
           isGameUpdate = false;
         }
