@@ -271,5 +271,10 @@ const gameAttrs = {
 };
 
 const soundAttrs = {
-  src: "./../../../assets/sounds/main.mp3"
+  src: "./../../../assets/sounds/main.mp3",
+  srcGetPlanet: "./../../../assets/sounds/effectHit/getPlanet.mp3",
+  srcPointStar: "./../../../assets/sounds/effectHit/pointStar.mp3",
+  srcPointPlanet: "./../../../assets/sounds/effectHit/pointPlanet.mp3",
+  srcGameOver: "./../../../assets/sounds/effectHit/gameOver.m4a",
+  srcButton: ""
 };

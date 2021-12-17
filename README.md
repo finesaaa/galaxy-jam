@@ -8,9 +8,7 @@
 - 05111940000138  -  Achmad Akbar Irwanda
 
 ## Galaxy Jam
+Your space journey has just begun
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/45300477/146508260-d12d533a-1210-4a49-8858-f47dcf7930eb.png">
-</p>
-<p align="center">
-  Space game and space education
+  <img src="https://user-images.githubusercontent.com/57583780/146520245-1b41de2c-fb4f-463d-87a1-c6518428260f.png">
 </p>

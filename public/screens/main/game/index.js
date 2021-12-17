@@ -388,7 +388,7 @@ function initializeCamera() {
     )
   );
 }
-
+var sound;
 function initializeWorld() {
   scene = new THREE.Scene();
   renderer = new THREE.WebGLRenderer();
@@ -400,7 +400,7 @@ function initializeWorld() {
 
   const audioLoader = new THREE.AudioLoader();
   const listener = new THREE.AudioListener();
-  const sound = new THREE.Audio( listener );
+  sound = new THREE.Audio( listener );
 
   audioLoader.load( soundAttrs.src, function( buffer ) {
     sound.setBuffer( buffer );
@@ -519,6 +519,9 @@ function updateRocket() {
   }
 }
 
+var soundGetStar = new Audio(soundAttrs.srcPointStar);
+var soundGameOver = new Audio(soundAttrs.srcGameOver);
+
 function updateObstaclesExsistence(objects, type = "") {
   let indices = [];
   for (var key in objects) {
@@ -535,9 +538,13 @@ function updateObstaclesExsistence(objects, type = "") {
       indices.push(key);
 
       if (type === "point") {
+        soundGetStar.currentTime = 0;
+        soundGetStar.play();
         gamePoint++;
         gamePointElement.innerHTML = `Point ${gamePoint}`;
       } else if (type === "asteroid") {
+        sound.stop();
+        soundGameOver.play();
         modalGameOver.style.display = "block";
       }
     } else if (object.fraction < cameraFraction) {
@@ -691,6 +698,8 @@ function removePlanet() {
   idlePlanetCounter = planetCounter;
 }
 
+var soundGetPlanet = new Audio(soundAttrs.srcPointPlanet)
+
 function updatePlanet() {
   if (Object.keys(planetObjects).length === Object.keys(planetsAttrs).length) {
     if (
@@ -718,6 +727,9 @@ function updatePlanet() {
             rocketFraction + rocketAttrs.movement.speed
           )
         ) {
+          soundGetPlanet.currentTime = 0;
+          soundGetPlanet.play();
+
           gamePoint += 5;
           gamePointElement.innerHTML = `Point ${gamePoint}`;
 

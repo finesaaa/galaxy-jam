@@ -39,7 +39,7 @@ var cameraIntroTime = 4000;
 var cameraIntroDone = false;
 var cameraInitialTimestamp = null;
 
-var sound;
+var sound, soundBtnIntro, soundBtnEdu, soundBtnGame;
 
 var stars = [];
 
@@ -54,14 +54,34 @@ var educationModeBtn = document.getElementById("education-mode-btn");
 
 var childWindow = "";
 
+soundBtnEdu = new Audio(soundAttrs.srcButtonEdu);
+soundBtnGame = new Audio(soundAttrs.srcButtonGame);
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 gameModeBtn.onclick = function() {
-  sessionStorage.setItem("mode", 1);
-  childWindow = window.open(mainPageUrl.game, "_self");
+  soundBtnGame.currentTime = 0;
+  soundBtnGame.play();
+
+  async function createsleep() {
+    await sleep(1000);
+    sessionStorage.setItem("mode", 1);
+    childWindow = window.open(mainPageUrl.game, "_self");
+  }
+  createsleep()
 }
 
 educationModeBtn.onclick = function() {
-  sessionStorage.setItem("mode", 2);
-  childWindow = window.open(mainPageUrl.education, "_self");
+  soundBtnEdu.currentTime = 0;
+  soundBtnEdu.play();
+
+  async function createsleep() {
+    await sleep(1000);
+    sessionStorage.setItem("mode", 2);
+    childWindow = window.open(mainPageUrl.education, "_self");
+  }
+  createsleep() 
 }
 
 function addStar(zPosition, scale = starAttrs.scale) {
@@ -173,13 +193,14 @@ function initializeWorld() {
   const listener = new THREE.AudioListener();
   listener.autoplay = true;
 
-  sound = new THREE.Audio( listener );
+  sound = new Audio(soundAttrs.src);
+  sound.currentTime = 4;
+  sound.play();
 
-  audioLoader.load( soundAttrs.src, function( buffer ) {
-    sound.setBuffer( buffer );
-    sound.setLoop( true );
-    sound.play();
-  });
+  sound.addEventListener('ended', function() {
+    this.currentTime = 6;
+    this.play();
+  }, false);
 
   var spotLight;
   var target;
@@ -272,8 +293,9 @@ function drawText()
 
 function onKeydown(event) {
   if (event.keyCode == 32) {
+    //console.log(sound.paused)
     if (sound != undefined) {
-      if (sound.isPlaying)
+      if (!sound.paused)
         sound.pause();
       else
         sound.play();
@@ -281,6 +303,8 @@ function onKeydown(event) {
   } 
 }
 document.addEventListener("keydown", onKeydown, false);
+
+soundBtnIntro = new Audio(soundAttrs.srcButtonIntro);
 
 function updateIntro()
 {
@@ -300,8 +324,11 @@ function updateIntro()
       buttonMesh.position.z = 500;
     }
 
+    soundBtnIntro.currentTime = 0;
+    soundBtnIntro.play();
     gameModeBtn.style.visibility = "visible";
     educationModeBtn.style.visibility = "visible";
+
   }
   if (textMeshs.length >= text.length)
   {

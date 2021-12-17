@@ -65,7 +65,10 @@ const planetsAttrs = {
 };
 
 const soundAttrs = {
-  src: "./../../assets/sounds/intro.mp3"
+  src: "./../../assets/sounds/intro-trim.mp3",
+  srcButtonIntro: "./../../assets/sounds/button/buttonIntro.m4a",
+  srcButtonEdu: "./../../assets/sounds/button/buttonEdu.m4a",
+  srcButtonGame: "./../../assets/sounds/button/buttonGame.m4a"
 };
 
 const fontAttrs = {
