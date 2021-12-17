@@ -25,6 +25,7 @@ var rocketMovement = 0;
 var dRocketMovement = rocketAttrs.movement.delta;
 var isRocketMove = false;
 var rocketIndexBefore = 0;
+var modalPopUp = false;
 
 var planetObjects = {};
 
@@ -40,6 +41,7 @@ var modalClose = document.getElementsByClassName("close")[0];
 var modalBtnShow = document.getElementById("detail-btn");
 
 modalClose.onclick = function () {
+  modalPopUp = false;
   modal.style.display = "none";
 
   isGameUpdate = true;
@@ -48,43 +50,46 @@ modalClose.onclick = function () {
 
 window.onclick = function (event) {
   if (event.target == modal) {
+    modalPopUp = false;
     modal.style.display = "none";
   }
 };
 
 function onKeydown(event) {
-  if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
-    // A atau a
-    if (rocketIndex - 1 >= 0 && !isRocketMove) {
-      rocketIndexBefore = rocketIndex;
-      isRocketMove = true;
-      rocketIndex -= 1;
+  if(!modalPopUp) {
+    if (event.keyCode == 65 || event.keyCode == 97 || event.keyCode == 37) {
+      // A atau a
+      if (rocketIndex - 1 >= 0 && !isRocketMove) {
+        rocketIndexBefore = rocketIndex;
+        isRocketMove = true;
+        rocketIndex -= 1;
+      }
+    } else if (
+      event.keyCode == 68 ||
+      event.keyCode == 100 ||
+      event.keyCode == 39
+    ) {
+      // D atau d
+      if (rocketIndex + 1 < paths.length && !isRocketMove) {
+        rocketIndexBefore = rocketIndex;
+        isRocketMove = true;
+        rocketIndex += 1;
+      }
+    } else if (
+      event.keyCode == 87 ||
+      event.keyCode == 119 ||
+      event.keyCode == 38
+    ) {
+      // W atau w
+      rocketAttrs.movement.speed = rocketSpeed;
+    } else if (
+      event.keyCode == 83 ||
+      event.keyCode == 115 ||
+      event.keyCode == 40
+    ) {
+      // S atau s
+      rocketAttrs.movement.speed = -rocketSpeed;
     }
-  } else if (
-    event.keyCode == 68 ||
-    event.keyCode == 100 ||
-    event.keyCode == 39
-  ) {
-    // D atau d
-    if (rocketIndex + 1 < paths.length && !isRocketMove) {
-      rocketIndexBefore = rocketIndex;
-      isRocketMove = true;
-      rocketIndex += 1;
-    }
-  } else if (
-    event.keyCode == 87 ||
-    event.keyCode == 119 ||
-    event.keyCode == 38
-  ) {
-    // W atau w
-    rocketAttrs.movement.speed = rocketSpeed;
-  } else if (
-    event.keyCode == 83 ||
-    event.keyCode == 115 ||
-    event.keyCode == 40
-  ) {
-    // S atau s
-    rocketAttrs.movement.speed = -rocketSpeed;
   }
 }
 document.addEventListener("keydown", onKeydown, false);
@@ -516,6 +521,9 @@ function updatePlanets() {
         rocketFraction + rocketAttrs.movement.speed
       )
     ) {
+      modalPopUp = true;
+      rocketFraction += rocketAttrs.movement.speed;
+      rocketAttrs.movement.speed = 0;
       modal.style.display = "block";
       modalPlanetName.innerHTML = `You will visit ${planet.name.toUpperCase()}`;
       modalBtnShow.href = `./../../detail/${planet.name}/index.html`;
